@@ -29,5 +29,8 @@
 # Local directories #
 ######################
 bin/
+build/
+debug/
 lib/
-__MACOSX
+release/
+__MACOSX/
