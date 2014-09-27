@@ -1,6 +1,8 @@
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <vector>
+#include <string>
 
 struct LaserData{
 	// Robot pose
@@ -9,7 +11,7 @@ struct LaserData{
 	float xl, yl, thetal;
 	// Range readings of laser in cm. 180 readings span 180 degrees 
 	// starting right, going left
-	float r[180];
+	int r[180];
 	// Timestamp of laser reading
 	float ts;
 };
