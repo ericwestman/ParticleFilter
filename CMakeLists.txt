@@ -11,9 +11,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
 set(CMAKE_CXX_FLAGS "-std=c++11")
 
+find_package( OpenCV REQUIRED )
+
 add_executable (ParticleFilter 
 	src/particleFilter.cpp
 	src/mapReader.cpp
-	src/logReader.cpp)
+	src/logReader.cpp
+	src/visualize.cpp)
 
-#target_link_libraries (helloDemo LINK_PUBLIC Hello)
+target_link_libraries( ParticleFilter ${OpenCV_LIBS} )
