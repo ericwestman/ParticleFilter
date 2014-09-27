@@ -4,8 +4,12 @@
 
 int main()
 {
+	// Load occupancy map of wean hall
   char weanMapName[] = "../data/map/wean.dat";
   MyMap *weanMap = new MyMap;
   read_map(weanMapName, weanMap);
-  std::cout << "Hello World!\n";
+
+  // Load data from the log
+
+  std::cout << "Done!\n";
 }
