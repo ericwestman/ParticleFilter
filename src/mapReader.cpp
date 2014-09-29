@@ -70,10 +70,7 @@ int ParticleFilter::readMap()
       	
         weanMap.prob[x][y] = 1 - temp;	   
         if (temp > 0.8) {
-          Particle location;
-          location.x = x;
-          location.y = y;
-          location.theta = 0;
+          Particle location(x, y, 0.0);
           potentialParticles.push_back(location);
         }
       }

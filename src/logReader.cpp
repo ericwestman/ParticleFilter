@@ -60,6 +60,6 @@ void ParticleFilter::readLog()
     myfile.close();
   }
 
-  else cout << "Unable to open file"; 
+  else cout << "Unable to open file " << logName << "\n"; 
 	return;
 };

@@ -6,8 +6,8 @@ using namespace std;
 void ParticleFilter::dispParticles()
 {
   for(int i = 0; i< particles.size(); i++) {
-    int particleX = particles[i].x;
-    int particleY = particles[i].y;
+    int particleX = particles[i].getX();
+    int particleY = particles[i].getY();
 
     circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
   }

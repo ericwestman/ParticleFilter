@@ -26,16 +26,14 @@ void ParticleFilter::redrawParticles()
 void ParticleFilter::motionModel(int timestep)
 {
 	for (int i = 0; i < particles.size(); i++) {
-		Particle p;
-		int xrand= (int) xDistribution(generator);
-		int yrand= (int) yDistribution(generator);
-		p.x = particles[i].x + logOdometryData[timestep].x - logOdometryData[timestep - 1].x 
+		int xrand= (int) 3*xDistribution(generator);
+		int yrand= (int) 3*yDistribution(generator);
+		int x = particles[i].getX() + logOdometryData[timestep].x - logOdometryData[timestep - 1].x 
 												 - xrand;
-		p.y = particles[i].y + logOdometryData[timestep].y - logOdometryData[timestep - 1].y 
+		int y = particles[i].getY() + logOdometryData[timestep].y - logOdometryData[timestep - 1].y 
 												 - yrand;
-		p.theta = 0;
-		particles[i] = p;
-		cout << p.x << ", " << p.y << endl;
+		particles[i] = Particle(x, y, 0.0);
+		cout << xrand << ", " << yrand << endl;
 	}
   return;
 }

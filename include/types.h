@@ -6,11 +6,6 @@ struct MyMap{
   float prob[800][800];
 };
 
-struct Particle {
-  int x, y;
-  float theta;
-};
-
 struct LaserData{
   // Robot pose
   float x, y, theta;
@@ -28,4 +23,20 @@ struct OdometryData{
   float x, y, theta;
   // Timestamp of odometry reading
   float ts;
+};
+
+class Particle {
+public:
+  Particle(int x_val, int y_val, float theta_val) :
+    x(x_val),
+    y(y_val),
+    theta(theta_val) {};
+
+  int getX() {return this->x;}
+
+  int getY() {return this->y;}
+
+private:
+  int x, y;
+  float theta;
 };
