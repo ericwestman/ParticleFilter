@@ -38,9 +38,9 @@ public:
 
   int getTheta() {return this->theta;}
 
-  void setX(double x_in) {this->x = x_in; return;}
+  void setX(int x_in) {this->x = x_in; return;}
 
-  void setY(double y_in) {this->y = y_in; return;}
+  void setY(int y_in) {this->y = y_in; return;}
 
   void setTheta(double theta_in) {this->theta = theta_in; return;}
 
