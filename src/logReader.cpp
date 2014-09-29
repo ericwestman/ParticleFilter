@@ -1,4 +1,10 @@
-#include <logReader.h>
+#include <ParticleFilter.h>
+
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <vector>
+#include <string>
 
 using namespace std;
 
@@ -19,9 +25,7 @@ vector<string> split(const string &s, char delim)
     return elems;
 }
 
-void read_log(char *logName, vector<LaserData> &logLaser, 
-                             vector<OdometryData> &logOdometry,
-                             vector<float> &timestamps)
+void ParticleFilter::readLog()
 {
   string line;
   ifstream myfile (logName);
@@ -34,7 +38,7 @@ void read_log(char *logName, vector<LaserData> &logLaser,
       	odom.y       = stof(elements[2]);
         odom.theta   = stof(elements[3]);
       	odom.ts 		 = stof(elements[4]);
-      	logOdometry.push_back(odom);
+      	logOdometryData.push_back(odom);
         timestamps.push_back(odom.ts);
       }
       else if (elements[0] == "L"){
@@ -46,6 +50,7 @@ void read_log(char *logName, vector<LaserData> &logLaser,
       	laser.yl     = stof(elements[5]);
       	laser.thetal = stof(elements[6]);
       	laser.ts     = stof(elements[187]);
+        logLaserData.push_back(laser);
         timestamps.push_back(laser.ts);
 
       	for (int i = 0; i < 180; i ++){

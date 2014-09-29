@@ -17,6 +17,7 @@ add_executable (ParticleFilter
 	src/particleFilter.cpp
 	src/mapReader.cpp
 	src/logReader.cpp
-	src/visualize.cpp)
+	src/visualize.cpp
+	src/particle.cpp)
 
 target_link_libraries( ParticleFilter ${OpenCV_LIBS} )
