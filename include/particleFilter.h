@@ -15,7 +15,7 @@ public:
 	void readLog();
 
   // Particle filter methods
-  void drawParticles(int n);
+  void drawParticles();
   void motionModel(int timestep);
   void calculateWeights();
   void resampleParticles();
@@ -35,17 +35,20 @@ private:
   cv::Mat frame;
 
   // Particle data
+  int numParticles;
   std::vector<Particle> potentialParticles;
   std::vector<Particle> particles;
-  std::vector<double> weights;
+  std::vector<float> weights;
+  std::vector<float> weightedDistribution;
+  std::vector<int> intervals;
 
   // Data pertaining to log file
   char *logName;
   std::vector<LaserData> logLaserData;
   std::vector<OdometryData> logOdometryData;
 
-  // Define probability distributions
+  // Setup for probability distributions
+  unsigned seed;
   std::default_random_engine generator;
-  std::normal_distribution<double> xDistribution;
-  std::normal_distribution<double> yDistribution;
+  std::normal_distribution<double> normal;
 };

@@ -15,8 +15,11 @@ ParticleFilter::ParticleFilter()
 
   logName = "../data/log/robotdata1.log";
 
-  std::normal_distribution<double> xDistribution(0.0,20.0);
-  std::normal_distribution<double> yDistribution(0.0,20.0);
+  numParticles = 10000;
+
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(seed);
+  normal = std::normal_distribution<double>(0.0,5.0);
 }
 
 int main()
@@ -33,11 +36,13 @@ int main()
   filter.readLog();
 
   // Draw initial particles
-  filter.drawParticles(10000);
+  filter.drawParticles();
 
   // Start the filter!
   for (int i = 1; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
+    // filter.calculateWeights();
+    // filter.resampleParticles();
     filter.visualize();
   }
 

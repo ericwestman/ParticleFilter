@@ -1,42 +1,27 @@
 #include <ParticleFilter.h>
 
 #include <vector>
+#include <numeric>
 #include <math.h>
 #include <stdlib.h>
+
+#include <iterator>
+#include <ctime>
+#include <type_traits>
+#include <cassert>
 
 #define TWO_PI 6.2831853071795864769252866
 
 using namespace std;
- 
-double generateGaussianNoise(const double &variance)
-{
-  static bool haveSpare = false;
-  static double rand1, rand2;
- 
-  if(haveSpare)
-  {
-    haveSpare = false;
-    return sqrt(variance * rand1) * sin(rand2);
-  }
- 
-  haveSpare = true;
- 
-  rand1 = rand() / ((double) RAND_MAX);
-  if(rand1 < 1e-100) rand1 = 1e-100;
-  rand1 = -2 * log(rand1);
-  rand2 = (rand() / ((double) RAND_MAX)) * TWO_PI;
- 
-  return sqrt(variance * rand1) * cos(rand2);
-}
 
-void ParticleFilter::drawParticles(int n)
+void ParticleFilter::drawParticles()
 {
   // Set up random number generator for heading
   std::random_device rd;
   std::mt19937_64 mt(rd());
-  std::uniform_real_distribution<double> heading(0, TWO_PI);
+  std::uniform_real_distribution<float> heading(0, TWO_PI);
 
-  for(int i = 0; i < n; i++){
+  for(int i = 0; i < numParticles; ++i){
     // Get random particle from map
     int j = rand() % potentialParticles.size();
 
@@ -51,11 +36,9 @@ void ParticleFilter::drawParticles(int n)
 
 void ParticleFilter::motionModel(int timestep)
 {
-	for (int i = 0; i < particles.size(); i++) {
-	// 	int xrand = (int) 3*xDistribution(generator);
-	// 	int yrand = (int) 3*yDistribution(generator);
-    int xrand = (int) generateGaussianNoise(10);
-    int yrand = (int) generateGaussianNoise(10);
+	for (int i = 0; i < particles.size(); ++i) {
+		int xrand = (int) normal(generator);
+		int yrand = (int) normal(generator);
 		int x = particles[i].getX() + logOdometryData[timestep].x - logOdometryData[timestep - 1].x 
 												 - xrand;
 		int y = particles[i].getY() + logOdometryData[timestep].y - logOdometryData[timestep - 1].y 
@@ -67,11 +50,50 @@ void ParticleFilter::motionModel(int timestep)
 
 void ParticleFilter::calculateWeights()
 {
+  cout << "Im here" << endl;
+  // weights.resize(0);
+  // intervals.resize(0);
+  weights.clear();
+  intervals.clear();
+  cout << "Im here2" << endl;
+
+  weights.push_back(1000.);
+  intervals.push_back(0);
+
+  cout << "Im here3" << endl;
+
+  for (int i = 1; i < particles.size(); ++i) {
+    weights[i]    = 0.1;
+    intervals[i]  = i;
+    cout << i << ", " << weights[i] << ", " << intervals[i] << endl;
+  }
+  intervals[particles.size()] = particles.size();
+
+  cout << "Im here4" << endl;
   return;
 }
 
 void ParticleFilter::resampleParticles()
 {
+  // Set up distribution
+  std::piecewise_constant_distribution<> dist(begin(intervals),
+                                              end(intervals),
+                                              begin(weights));
+
+  // Copy the current particles and clear the vector
+  vector<Particle> oldParticles = particles;
+  particles.clear();
+
+  for (int i = 0; i < numParticles; ++i)
+  {
+      // Generate random number using gen, distributed according to dist
+      int r = (int) dist(generator);
+      // Sanity check
+      assert(intervals[0] <= r && r <= *(end(intervals)-2));
+      // Push the new particle into the vector
+      particles.push_back(oldParticles[r]);
+  }
+
   return;
 }
 
