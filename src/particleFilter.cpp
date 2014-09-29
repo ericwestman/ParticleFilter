@@ -2,18 +2,20 @@
 #include <ParticleFilter.h>
 
 using namespace std;
+using namespace cv;
 
 ParticleFilter::ParticleFilter() 
 {
+  // Initialize class members
   weanMapName = "../data/map/wean.dat";
-  weanMap = new MyMap;
-  // std::vector<Particle> potentialParticles;
-  // std::vector<Particle> particles;
+  weanMap = MyMap();
+  image = Mat(800,800,CV_32FC3);
+  frame = Mat(800,800,CV_32FC3);
 
   logName = "../data/log/robotdata1.log";
-  // std::vector<float> timestamps;
-  // std::vector<LaserData> logLaserData;
-  // std::vector<OdometryData> logOdometryData;
+
+  std::normal_distribution<double> xDistribution(0.0,50);
+  std::normal_distribution<double> yDistribution(0.0,50);
 }
 
 int main()
@@ -26,6 +28,7 @@ int main()
 
 	// Load occupancy map of wean hall
   filter.readMap();
+  filter.loadMapImage();
 
   // Load data from the log
   filter.readLog();
@@ -34,8 +37,9 @@ int main()
   filter.drawParticles();
 
   // Visualize building map
-  for (int i = 0; i < filter.timestamps.size(); i++) {
+  for (int i = 1; i < filter.timestamps.size(); i++) {
   	filter.visualize();
+    filter.motionModel(i);
   }
 
   std::cout << "Done!\n";
