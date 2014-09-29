@@ -25,6 +25,12 @@ struct OdometryData{
   float ts;
 };
 
+
+struct Coord{
+  int row, col;
+};
+
+
 class Particle {
 public:
   Particle(int x_val, int y_val, float theta_val) :
@@ -48,3 +54,4 @@ private:
   int x, y;
   float theta;
 };
+

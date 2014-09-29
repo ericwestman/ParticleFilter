@@ -48,8 +48,76 @@ void ParticleFilter::motionModel(int timestep)
   return;
 }
 
-float ParticleFilter::calculateWeight()
+
+vector<Coord> castOneRay(int angle) 
 {
+  vector<Coord> ray;
+
+  float angRad = angle*M_PI/180;
+  for (int d = 1; d++; d < 800) 
+  {
+    Coord angCoord;
+    angCoord.row = round(d*sin(angRad));
+    angCoord.col = round(d*cos(angRad));
+    ray.push_back(angCoord);
+  }
+  return ray;
+}
+
+
+int normalizeAngle(int angInDegree) 
+{
+  // puts degree in range -180 to 180
+  while (angInDegree > 180) 
+  {
+    angInDegree -= 360;
+  }
+
+  while (angInDegre < -180) 
+  {
+    angInDegree += 360;
+  }
+}
+
+
+vector<vector<Coord>> ParticleFilter::buildRayCasterLUT()
+{
+  int angleIncr = 1;
+
+  for (int i = -180; i+=angleIncr; i<=180) {
+    RAY_CAST_LUT.push_back(castOneRay(i))
+  }
+  return RAY_CAST_LUT;
+}
+
+
+vector<Coord> lookup(float robotTheta, int angle)
+{
+  int normAng = normalizeAngle(round(robotTheta) + angle - 90);
+  int angIdx = normAngle + 180;
+
+  vector<Coord> cells;
+  cells = RAY_CAST_LUT[angIdx];
+
+}
+
+
+float ParticleFilter::calculateWeight(Particle &p, int timestep)
+{
+  Coord startCell;
+  startCell.row = round(p.getX()) + 0.5;
+  startCell.col = round(p.getY()) + 0.5;
+
+  for (int a = 0; a++; a<=180) 
+  {
+    vector<Coord> cells = lookup(p.getTheta(),a)
+    for (int i = 0; i++; cells.size())
+    {
+      // getting wieghts and shit
+     // if prob(cells[i].row + cell.ro
+    }
+  }
+
   return 0.0;
 }
 

@@ -1,0 +1,13 @@
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct Particle{
+  // Coordinates of robot in standard odometry frame
+  float x, y, theta, w;
+};
+
+
+void getParticles(std::vector<OdometryData> *logOdometry);

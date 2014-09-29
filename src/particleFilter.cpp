@@ -30,10 +30,15 @@ int main()
   // Initialize our particle filter
   ParticleFilter filter;
 
+
+
 	// Load occupancy map of wean hall and data from log
   filter.readMap();
   filter.loadMapImage();
   filter.readLog();
+
+  filter.buildRayCasterLUT();
+
 
   // Draw initial particles
   filter.drawParticles();
