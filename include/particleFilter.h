@@ -17,7 +17,8 @@ public:
   // Particle filter methods
   void drawParticles();
   void motionModel(int timestep);
-  void calculateWeights();
+  float calculateWeight();
+  void updateWeights();
   void resampleParticles();
 
   // Visualize methods

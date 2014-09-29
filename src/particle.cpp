@@ -48,28 +48,25 @@ void ParticleFilter::motionModel(int timestep)
   return;
 }
 
-void ParticleFilter::calculateWeights()
+float ParticleFilter::calculateWeight()
 {
-  cout << "Im here" << endl;
-  // weights.resize(0);
-  // intervals.resize(0);
+  return 0.0;
+}
+
+void ParticleFilter::updateWeights()
+{
   weights.clear();
   intervals.clear();
-  cout << "Im here2" << endl;
 
   weights.push_back(1000.);
   intervals.push_back(0);
 
-  cout << "Im here3" << endl;
-
   for (int i = 1; i < particles.size(); ++i) {
-    weights[i]    = 0.1;
-    intervals[i]  = i;
-    cout << i << ", " << weights[i] << ", " << intervals[i] << endl;
+    weights.push_back(0.1);
+    intervals.push_back(i);
   }
-  intervals[particles.size()] = particles.size();
+  intervals.push_back(particles.size());
 
-  cout << "Im here4" << endl;
   return;
 }
 
