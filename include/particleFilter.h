@@ -10,13 +10,17 @@
 class ParticleFilter {
 public:
   ParticleFilter();
+  // File I/O methods
 	int readMap();
 	void readLog();
-  void drawParticles();
-	void redrawParticles();
-  void motionModel(int timestep);
 
-  // Visualize functions
+  // Particle filter methods
+  void drawParticles(int n);
+  void motionModel(int timestep);
+  void calculateWeights();
+  void resampleParticles();
+
+  // Visualize methods
   void dispParticles();
   void loadMapImage();
   void visualize();
@@ -27,10 +31,13 @@ private:
   // Data pertaining to map
   char *weanMapName;
   MyMap weanMap;
-  std::vector<Particle> potentialParticles;
-  std::vector<Particle> particles;
   cv::Mat image;
   cv::Mat frame;
+
+  // Particle data
+  std::vector<Particle> potentialParticles;
+  std::vector<Particle> particles;
+  std::vector<double> weights;
 
   // Data pertaining to log file
   char *logName;

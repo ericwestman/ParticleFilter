@@ -33,7 +33,7 @@ int main()
   filter.readLog();
 
   // Draw initial particles
-  filter.drawParticles();
+  filter.drawParticles(10000);
 
   // Start the filter!
   for (int i = 1; i < filter.timestamps.size(); i++) {

@@ -5,7 +5,7 @@ using namespace std;
 
 void ParticleFilter::dispParticles()
 {
-  for(int i = 0; i< particles.size(); i++) {
+  for(int i = 0; i< particles.size()/100; i++) {
     int particleX = particles[i].getX();
     int particleY = particles[i].getY();
 
