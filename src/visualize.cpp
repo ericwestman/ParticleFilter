@@ -3,7 +3,7 @@
 using namespace cv;
 using namespace std;
 
-void visualize(MyMap *occupancyMap, vector<Particle>& potentialParticles)
+void visualize(MyMap *occupancyMap, vector<Particle>& particles)
 {
     Mat image(800,800,CV_32FC3);
     for(uint i = 0; i < image.rows; i++)
@@ -16,18 +16,12 @@ void visualize(MyMap *occupancyMap, vector<Particle>& potentialParticles)
       }
     }
 
-    vector<Particle> v;
-    for(int i = 0; i < 100; i++){
-      int j = rand() % potentialParticles.size();
-      v.push_back(potentialParticles[j]);
-    }
-
-    dispParticles(image, v);
+    dispParticles(image, particles);
 
     namedWindow( "Wean Map", WINDOW_AUTOSIZE );   // Create a window for display.
     imshow( "Wean Map", image );                  // Show our image inside it.
 
-    waitKey(0);                                   // Wait for a keystroke in the window
+    waitKey(50);                                   // Wait for a keystroke in the window
     return;
 }
 

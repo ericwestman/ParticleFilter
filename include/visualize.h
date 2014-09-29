@@ -6,9 +6,9 @@
 #include <mapReader.h>
 #include <iostream>
 #include <particle.h>
-#include <stdlib.h>     /* srand, rand */
+#include <stdlib.h>
 #include <vector>
 
-void visualize(MyMap *occupancyMap, std::vector<Particle>& potentialParticles);
+void visualize(MyMap *occupancyMap, std::vector<Particle>& particles);
 
 void dispParticles(cv::Mat &image, std::vector<Particle> &samples);

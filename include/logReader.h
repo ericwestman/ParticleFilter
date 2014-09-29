@@ -23,5 +23,6 @@ struct OdometryData{
   float ts;
 };
 
-void read_log(char *logName, std::vector<LaserData> *logLaser, 
-                             std::vector<OdometryData> *logOdometry);
+void read_log(char *logName, std::vector<LaserData> &logLaser, 
+                             std::vector<OdometryData> &logOdometry,
+                             std::vector<float> &timestamps);

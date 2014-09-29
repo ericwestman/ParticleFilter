@@ -6,6 +6,9 @@ using namespace std;
 
 int main()
 {
+	// Setup for random number generator
+	srand(time(NULL));
+
 	// Load occupancy map of wean hall
   char weanMapName[] = "../data/map/wean.dat";
   MyMap *weanMap = new MyMap;
@@ -14,12 +17,18 @@ int main()
 
   // Load data from the log
   char logName[] = "../data/log/robotdata1.log";
-  vector<LaserData> *myLaserData = new vector<LaserData>;
-  vector<OdometryData> *myOdometryData = new vector<OdometryData>;
-  read_log(logName, myLaserData, myOdometryData);
+  vector<float> timestamps;
+  vector<LaserData> myLaserData;
+  vector<OdometryData> myOdometryData;
+  read_log(logName, myLaserData, myOdometryData, timestamps);
+
+  // Draw initial particles
+  vector<Particle> particles = drawParticles(potentialParticles);
 
   // Visualize building map
-  visualize(weanMap, potentialParticles);
+  for (int i = 0; i < timestamps.size(); i++) {
+  	visualize(weanMap, particles);
+  }
 
   std::cout << "Done!\n";
 }
