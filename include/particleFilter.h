@@ -17,8 +17,11 @@ public:
   // Particle filter methods
   void drawParticles();
   void motionModel(int timestep);
-  float calculateWeight();
-  void updateWeights();
+  float calculateWeight_LUT(Particle &p, int timestep);
+  float calculateWeight(Particle &p, int timestep);
+  void updateWeights_test();
+  void updateWeights_LUT(int timestep);
+  void updateWeights_noLUT(int timestep);
   void resampleParticles();
 
   // Visualize methods
@@ -27,6 +30,11 @@ public:
   void visualize();
 
   std::vector<float> timestamps;
+
+  // ray caster lookup table
+  void buildRayCasterLUT();
+  std::vector<Coord> lookup(float robotTheta, int angle);
+  std::vector<std::vector<Coord>> RAY_CAST_LUT;
 
 private:
   // Data pertaining to map
@@ -52,4 +60,7 @@ private:
   unsigned seed;
   std::default_random_engine generator;
   std::normal_distribution<double> normal;
+
+
+
 };
