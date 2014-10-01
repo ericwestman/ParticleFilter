@@ -35,7 +35,7 @@ void ParticleFilter::drawParticles()
   return;
 }
 
-void ParticleFilter::motionModel(int timestep)
+void ParticleFilter::motionModel(int &timestep)
 {
 	for (int i = 0; i < particles.size(); ++i) {
 		float xrand = xy_normal(generator);
@@ -57,7 +57,7 @@ void ParticleFilter::motionModel(int timestep)
 }
 
 
-vector<Coord> castOneRay(int angle) 
+vector<Coord> castOneRay(int &angle) 
 {
   vector<Coord> ray;
 
@@ -101,7 +101,7 @@ void ParticleFilter::buildRayCasterLUT()
 }
 
 
-vector<Coord> ParticleFilter::lookup(int robotTheta, int angle)
+vector<Coord> ParticleFilter::lookup(int &robotTheta, int &angle)
 {
   // look up a vector of coordinates from the lookup table
   int normAngle = normalizeAngle(int(round(robotTheta)) + angle - 90);
@@ -130,7 +130,7 @@ bool inGridBounds(Coord cell)
 
 
 
-float ParticleFilter::calculateWeight_LUT(Particle &p, int timestep)
+float ParticleFilter::calculateWeight_LUT(Particle &p, int &timestep)
 {
   float wallProb = 0.8;
   float laserError = 0.05;
@@ -192,7 +192,7 @@ float ParticleFilter::calculateWeight_LUT(Particle &p, int timestep)
 
 
 
-void ParticleFilter::updateWeights_LUT(int timestep)
+void ParticleFilter::updateWeights_LUT(int &timestep)
 {
   weights.clear();
   intervals.clear();
