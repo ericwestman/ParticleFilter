@@ -19,8 +19,8 @@ ParticleFilter::ParticleFilter()
 
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
-  xy_normal = std::normal_distribution<double>(0.0,0.2);
-  theta_normal = std::normal_distribution<double>(0.0,M_PI/180);
+  xy_normal = std::normal_distribution<double>(0.0,2);
+  theta_normal = std::normal_distribution<double>(0.0,2*M_PI/180);
 
 }
 
@@ -37,9 +37,6 @@ int main()
   filter.loadMapImage();
   filter.readLog();
 
-  // build look up table for ray caster
-  filter.buildRayCasterLUT();
-
   // Draw initial particles
   filter.drawParticles();
   filter.visualize();
@@ -47,12 +44,10 @@ int main()
   // Start the filter!
   for (int i = 100; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
-    // filter.updateWeights_test();
-    // filter.updateWeights_LUT(i);
+    filter.visualize();
     // filter.updateWeights(i);
     filter.updateWeightsCV(i);
     filter.resampleParticles();
-    filter.visualize();
   }
 
   std::cout << "Done!\n";
