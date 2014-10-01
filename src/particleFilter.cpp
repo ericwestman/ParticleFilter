@@ -48,8 +48,8 @@ int main()
   for (int i = 1; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
     // filter.updateWeights_test();
-    filter.updateWeights_LUT(i);
-    // filter.updateWeights_noLUT(i);
+    // filter.updateWeights_LUT(i);
+    filter.updateWeights(i);
     filter.resampleParticles();
     filter.visualize();
   }

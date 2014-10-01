@@ -44,14 +44,15 @@ void ParticleFilter::motionModel(int &timestep)
 
     // We're only using the laser measurements (with odometry data), as opposed to all
     // of the odometry measurements that we get in between (maybe change later)
-		float x = particles[i].getX() + (logLaserData[timestep].x - logLaserData[timestep - 1].x)/10 
-												 + xrand; // random displacement in grid cell units
-		float y = particles[i].getY() + (logLaserData[timestep].y - logLaserData[timestep - 1].y)/10
-                         + yrand; // random displacement in grid cell units
+		float x = particles[i].getX() + (logLaserData[timestep].x - logLaserData[timestep - 1].x)/10.0
+												 ;//+ xrand; // random displacement in grid cell units
+		float y = particles[i].getY() + (logLaserData[timestep].y - logLaserData[timestep - 1].y)/10.0
+                         ;//+ yrand; // random displacement in grid cell units
     float t = particles[i].getTheta() + logLaserData[timestep].theta - logLaserData[timestep - 1].theta 
-                         + trand; // random displacement in radians
+                         ;//+ trand; // random displacement in radians
 
 		particles[i] = Particle(x, y, t);
+
 	}
   return;
 }
@@ -137,8 +138,8 @@ float ParticleFilter::calculateWeight_LUT(Particle &p, int &timestep)
   float accumWeights = 1;
 
   Coord startCell;
-  startCell.row = min(int(round(p.getX())),800);
-  startCell.col = min(int(round(p.getY())),800);
+  startCell.row = min(int(round(p.getX()+25*cos(p.getTheta()))),800);
+  startCell.col = min(int(round(p.getY()+25*sin(p.getTheta()))),800);
 
   int pAngle = p.getTheta()*180/M_PI;
 
@@ -206,50 +207,145 @@ void ParticleFilter::updateWeights_LUT(int &timestep)
 }
 
 
-// float ParticleFilter::calculateWeight(Particle &p, int timestep) {
-//   float wallProb = 0.8;
-//   float laserError = 0.5;  // cm
-//   float accumWeights = 1;
+float ParticleFilter::calculateWeight(Particle &p, int &timestep) {
+  float wallProb = 0.8;
+  float laserError = 0.5;  // cm
+  float accumWeights = 1;
 
 
-//   Coord startCell;
-//   startCell.row = min(int(round(p.getX())),800);
-//   startCell.col = min(int(round(p.getY())),800);
+  Coord startCell;
+  startCell.row = min(int(round(p.getX())),800);
+  startCell.col = min(int(round(p.getY())),800);
 
 
-//   for (int a = 0; a < 180; a++) 
-//   {   
-//     for (int i = 0; i < 800; i+=1)
-//     {
-//       float rowDist = sin(p.getTheta())*i;
-//       float colDist = cos(p.getTheta())*i;
+  for (int a = 0; a < 180; a++) 
+  {   
+    for (int i = 0; i < 800; i+=1)
+    {
+      float rowDist = sin(p.getTheta())*i;
+      float colDist = cos(p.getTheta())*i;
 
-//       Coord cell;
-//       cell.row = int(round(rowDist+p.getY()));
-//       cell.col = int(round(colDist+p.getX()));
+      Coord cell;
+      cell.row = int(round(rowDist+p.getY()));
+      cell.col = int(round(colDist+p.getX()));
 
 
-//       if (inGridBounds(cell))
-//       {  
-//         // if the ray hits a wall
-//         if (weanMap.prob[cell.row][cell.col] >= wallProb)
-//         {
-//             float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
-//             float actualDistToWall = logLaserData[timestep].r[a];
-//             accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
-//             break;
-//         }
-//         // have to decide what to do here
-//         else if (weanMap.prob[cell.row][cell.col] == -1)
-//         {}
-//       }
-//       // and here...
-//       else
-//       {}
-//     }
-//   }
-//   return accumWeights;
-// }
+      if (inGridBounds(cell))
+      {  
+        // if the ray hits a wall
+        if (weanMap.prob[cell.row][cell.col] >= wallProb)
+        {
+            float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
+            float actualDistToWall = logLaserData[timestep].r[a];
+            accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
+            break;
+        }
+        // have to decide what to do here
+        else if (weanMap.prob[cell.row][cell.col] == -1)
+        {}
+      }
+      // and here...
+      else
+      {}
+    }
+  }
+  return accumWeights;
+}
+
+
+float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
+  float wallProb = 0.8;
+  float laserError = 0.5;  // cm
+  float accumWeights = 1;
+
+
+  Coord startCell;
+  startCell.row = min(int(round(p.getX())),800);
+  startCell.col = min(int(round(p.getY())),800);
+
+
+  for (int a = 0; a < 180; a++) 
+  {   
+
+    // // grabs pixels along the line (pt1, pt2)
+    // // from 8-bit 3-channel image to the buffer
+    // LineIterator it(img, pt1, pt2, 8);
+    // LineIterator it2 = it;
+    // vector<Vec3b> buf(it.count);
+
+    // for(int i = 0; i < it.count; i++, ++it)
+    //     buf[i] = *(const Vec3b)*it;
+
+    // // alternative way of iterating through the line
+    // for(int i = 0; i < it2.count; i++, ++it2)
+    // {
+    //     Vec3b val = img.at<Vec3b>(it2.pos());
+    //     CV_Assert(buf[i] == val);
+    // }
+
+    for (int i = 0; i < 800; i+=1)
+    {
+      float rowDist = sin(p.getTheta())*i;
+      float colDist = cos(p.getTheta())*i;
+
+      Coord cell;
+      cell.row = int(round(rowDist+p.getY()));
+      cell.col = int(round(colDist+p.getX()));
+
+
+      if (inGridBounds(cell))
+      {  
+        // if the ray hits a wall
+        if (weanMap.prob[cell.row][cell.col] >= wallProb)
+        {
+            float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
+            float actualDistToWall = logLaserData[timestep].r[a];
+            accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
+            break;
+        }
+        // have to decide what to do here
+        else if (weanMap.prob[cell.row][cell.col] == -1)
+        {}
+      }
+      // and here...
+      else
+      {}
+    }
+  }
+  return accumWeights;
+}
+
+
+
+void ParticleFilter::updateWeights(int &timestep)
+{
+  weights.clear();
+  intervals.clear();
+
+  for (int p = 0; p <= particles.size(); p++) {
+    weights.push_back(calculateWeight(particles[p],timestep));
+    intervals.push_back(p);
+  }
+
+  return;
+}
+
+
+
+void ParticleFilter::updateWeightsCV(int &timestep)
+{
+  weights.clear();
+  intervals.clear();
+
+  for (int p = 0; p <= particles.size(); p++) {
+    weights.push_back(calculateWeightCV(particles[p],timestep));
+    intervals.push_back(p);
+  }
+
+  return;
+}
+
+
 
 
 
@@ -269,22 +365,6 @@ void ParticleFilter::updateWeights_LUT(int &timestep)
 
 //   return;
 // }
-
-
-
-// void ParticleFilter::updateWeights_noLUT(int timestep)
-// {
-//   weights.clear();
-//   intervals.clear();
-
-//   for (int p = 0; p <= particles.size(); p++) {
-//     weights.push_back(calculateWeight(particles[p],timestep));
-//     intervals.push_back(p);
-//   }
-
-//   return;
-// }
-
 
 
 

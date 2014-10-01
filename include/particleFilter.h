@@ -19,9 +19,11 @@ public:
   void motionModel(int &timestep);
   float calculateWeight_LUT(Particle &p, int &timestep);
   float calculateWeight(Particle &p, int &timestep);
+  float calculateWeightCV(Particle &p, int &timestep);
   void updateWeights_test();
   void updateWeights_LUT(int &timestep);
-  void updateWeights_noLUT(int &timestep);
+  void updateWeights(int &timestep);
+  void updateWeightsCV(int &timestep);
   void resampleParticles();
 
   // Visualize methods

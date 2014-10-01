@@ -33,7 +33,7 @@ struct Coord{
 
 class Particle {
 public:
-  Particle(int x_val, int y_val, float theta_val) :
+  Particle(float x_val, float y_val, float theta_val) :
     x(x_val),
     y(y_val),
     theta(theta_val) {};
@@ -51,7 +51,7 @@ public:
   void setTheta(double theta_in) {this->theta = theta_in; return;}
 
 private:
-  int x, y;
+  float x, y;
   float theta;
 };
 
