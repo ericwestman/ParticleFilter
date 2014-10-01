@@ -15,7 +15,7 @@ ParticleFilter::ParticleFilter()
 
   logName = "../data/log/robotdata1.log";
 
-  numParticles = 1000;
+  numParticles = 5000;
 
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
@@ -45,11 +45,12 @@ int main()
   filter.visualize();
 
   // Start the filter!
-  for (int i = 1; i < filter.timestamps.size(); i++) {
+  for (int i = 100; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
     // filter.updateWeights_test();
     // filter.updateWeights_LUT(i);
-    filter.updateWeights(i);
+    // filter.updateWeights(i);
+    filter.updateWeightsCV(i);
     filter.resampleParticles();
     filter.visualize();
   }

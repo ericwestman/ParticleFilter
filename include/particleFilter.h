@@ -28,6 +28,7 @@ public:
 
   // Visualize methods
   void dispParticles();
+  void dispAllParticles();
   void loadMapImage();
   void visualize();
 

@@ -235,10 +235,10 @@ float ParticleFilter::calculateWeight(Particle &p, int &timestep) {
         // if the ray hits a wall
         if (weanMap.prob[cell.row][cell.col] >= wallProb)
         {
-            float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
-            float actualDistToWall = logLaserData[timestep].r[a];
-            accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
-            break;
+          float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
+          float actualDistToWall = logLaserData[timestep].r[a];
+          accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
+          break;
         }
         // have to decide what to do here
         else if (weanMap.prob[cell.row][cell.col] == -1)
@@ -251,70 +251,6 @@ float ParticleFilter::calculateWeight(Particle &p, int &timestep) {
   }
   return accumWeights;
 }
-
-
-float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
-  float wallProb = 0.8;
-  float laserError = 0.5;  // cm
-  float accumWeights = 1;
-
-
-  Coord startCell;
-  startCell.row = min(int(round(p.getX())),800);
-  startCell.col = min(int(round(p.getY())),800);
-
-
-  for (int a = 0; a < 180; a++) 
-  {   
-
-    // // grabs pixels along the line (pt1, pt2)
-    // // from 8-bit 3-channel image to the buffer
-    // LineIterator it(img, pt1, pt2, 8);
-    // LineIterator it2 = it;
-    // vector<Vec3b> buf(it.count);
-
-    // for(int i = 0; i < it.count; i++, ++it)
-    //     buf[i] = *(const Vec3b)*it;
-
-    // // alternative way of iterating through the line
-    // for(int i = 0; i < it2.count; i++, ++it2)
-    // {
-    //     Vec3b val = img.at<Vec3b>(it2.pos());
-    //     CV_Assert(buf[i] == val);
-    // }
-
-    for (int i = 0; i < 800; i+=1)
-    {
-      float rowDist = sin(p.getTheta())*i;
-      float colDist = cos(p.getTheta())*i;
-
-      Coord cell;
-      cell.row = int(round(rowDist+p.getY()));
-      cell.col = int(round(colDist+p.getX()));
-
-
-      if (inGridBounds(cell))
-      {  
-        // if the ray hits a wall
-        if (weanMap.prob[cell.row][cell.col] >= wallProb)
-        {
-            float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
-            float actualDistToWall = logLaserData[timestep].r[a];
-            accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
-            break;
-        }
-        // have to decide what to do here
-        else if (weanMap.prob[cell.row][cell.col] == -1)
-        {}
-      }
-      // and here...
-      else
-      {}
-    }
-  }
-  return accumWeights;
-}
-
 
 
 void ParticleFilter::updateWeights(int &timestep)
@@ -328,6 +264,67 @@ void ParticleFilter::updateWeights(int &timestep)
   }
 
   return;
+}
+
+
+
+float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
+  float wallProb = 0.8;
+  float laserError = 0.5;  // cm
+  float accumWeights = 1;
+
+  // frame = image.clone();
+
+  Coord startCell;
+  startCell.row = min(int(round(p.getX())),800);
+  startCell.col = min(int(round(p.getY())),800);
+
+  for (int a = 0; a < 180; a++) {
+
+    Coord endCell;
+    endCell.row = int(round(p.getX()+800*cos(p.getTheta()+(a-90)*M_PI/180)));
+    endCell.col = int(round(p.getY()+800*sin(p.getTheta()+(a-90)*M_PI/180)));
+
+    // grabs pixels along the line (pt1, pt2)
+    // from 8-bit 3-channel image to the buffer
+    cv::LineIterator it(image, cv::Point(startCell.col, startCell.row), 
+                               cv::Point(endCell.col, endCell.row), 8);
+
+    // alternative way of iterating through the line
+    for(int i = 0; i < it.count; i++, ++it) {
+      if (it.pos().x >= 800 || it.pos().y >= 800) break;
+
+      // if (a < 110 && a > 70) frame.at<cv::Point3f>(it.pos()) = cv::Point3f(1., 0., 0.);
+      // else frame.at<cv::Point3f>(it.pos()) = cv::Point3f(0., 1., 0.);
+
+      float val = image.at<cv::Point3f>(it.pos()).x;
+
+      // if the ray hits a wall
+      if (1 - val >= wallProb && val >= 0)
+      {
+        int rowDist = it.pos().y - startCell.row;
+        int colDist = it.pos().x - startCell.col;
+        float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
+        float actualDistToWall = logLaserData[timestep].r[a];
+        accumWeights += invGauss(particleDistToWall,actualDistToWall,laserError);
+        break;
+      }
+      // have to decide what to do here
+      else if (val == -1) {
+        break;
+      }
+      
+    }
+  }
+
+  // // Optionally show the ray casting
+  // cv::namedWindow( "Wean Map", cv::WINDOW_AUTOSIZE);
+  // if (!frame.empty()) {
+  //   cv::imshow("Wean Map", frame);
+  // }
+  // cv::waitKey(0);
+
+  return accumWeights;
 }
 
 
@@ -346,9 +343,6 @@ void ParticleFilter::updateWeightsCV(int &timestep)
 }
 
 
-
-
-
 // void ParticleFilter::updateWeights_test()
 // {
 //   weights.clear();
@@ -365,7 +359,6 @@ void ParticleFilter::updateWeightsCV(int &timestep)
 
 //   return;
 // }
-
 
 
 void ParticleFilter::resampleParticles()
