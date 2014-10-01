@@ -33,7 +33,7 @@ public:
 
   // ray caster lookup table
   void buildRayCasterLUT();
-  std::vector<Coord> lookup(float robotTheta, int angle);
+  std::vector<Coord> lookup(int robotTheta, int angle);
   std::vector<std::vector<Coord>> RAY_CAST_LUT;
 
 private:
@@ -59,7 +59,8 @@ private:
   // Setup for probability distributions
   unsigned seed;
   std::default_random_engine generator;
-  std::normal_distribution<double> normal;
+  std::normal_distribution<double> xy_normal;
+  std::normal_distribution<double> theta_normal;
 
 
 

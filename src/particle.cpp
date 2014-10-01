@@ -19,7 +19,7 @@ void ParticleFilter::drawParticles()
   // Set up random number generator for heading
   std::random_device rd;
   std::mt19937_64 mt(rd());
-  std::uniform_real_distribution<float> heading(0, TWO_PI);
+  std::uniform_real_distribution<float> heading(-M_PI, M_PI);
 
   for(int i = 0; i < numParticles; ++i){
     // Get random particle from map
@@ -28,6 +28,7 @@ void ParticleFilter::drawParticles()
     // Assign random heading to particle
     Particle p = potentialParticles[j];
     p.setTheta(heading(mt));
+    // cout << "ParticleTheta: " << p.getTheta() << " and random: " << heading(mt) << endl;
 
     particles.push_back(p);
   }
@@ -37,13 +38,20 @@ void ParticleFilter::drawParticles()
 void ParticleFilter::motionModel(int timestep)
 {
 	for (int i = 0; i < particles.size(); ++i) {
-		int xrand = (int) normal(generator);
-		int yrand = (int) normal(generator);
-		int x = particles[i].getX() + logOdometryData[timestep].x - logOdometryData[timestep - 1].x 
-												 - xrand;
-		int y = particles[i].getY() + logOdometryData[timestep].y - logOdometryData[timestep - 1].y 
-												 - yrand;
-		particles[i] = Particle(x, y, 0.0);
+		float xrand = xy_normal(generator);
+		float yrand = xy_normal(generator);
+    float trand = theta_normal(generator);
+
+    // We're only using the laser measurements (with odometry data), as opposed to all
+    // of the odometry measurements that we get in between (maybe change later)
+		float x = particles[i].getX() + (logLaserData[timestep].x - logLaserData[timestep - 1].x)/10 
+												 + xrand; // random displacement in grid cell units
+		float y = particles[i].getY() + (logLaserData[timestep].y - logLaserData[timestep - 1].y)/10
+                         + yrand; // random displacement in grid cell units
+    float t = particles[i].getTheta() + logLaserData[timestep].theta - logLaserData[timestep - 1].theta 
+                         + trand; // random displacement in radians
+
+		particles[i] = Particle(x, y, t);
 	}
   return;
 }
@@ -59,6 +67,7 @@ vector<Coord> castOneRay(int angle)
     Coord angCoord;
     angCoord.row = int(round(d*sin(angRad)));
     angCoord.col = int(round(d*cos(angRad)));
+    // cout << " Row: " << angCoord.row << " Col: " << angCoord.col; 
     ray.push_back(angCoord);
   }
   return ray;
@@ -86,17 +95,17 @@ void ParticleFilter::buildRayCasterLUT()
   int angleIncr = 1;
 
   for (int i = -180; i <= 180; i += angleIncr) {
+    // cout << "\nRay: ";
     RAY_CAST_LUT.push_back(castOneRay(i));
   }
 }
 
 
-vector<Coord> ParticleFilter::lookup(float robotTheta, int angle)
+vector<Coord> ParticleFilter::lookup(int robotTheta, int angle)
 {
   // look up a vector of coordinates from the lookup table
   int normAngle = normalizeAngle(int(round(robotTheta)) + angle - 90);
   int angIdx = normAngle + 180;
-
   return RAY_CAST_LUT[angIdx];
 }
 
@@ -124,17 +133,19 @@ bool inGridBounds(Coord cell)
 float ParticleFilter::calculateWeight_LUT(Particle &p, int timestep)
 {
   float wallProb = 0.8;
-  float laserError = 0.5;  // cm
+  float laserError = 0.05;
   float accumWeights = 1;
 
   Coord startCell;
   startCell.row = min(int(round(p.getX())),800);
   startCell.col = min(int(round(p.getY())),800);
 
+  int pAngle = p.getTheta()*180/M_PI;
 
   for (int a = 0; a < 180; a++) 
   {
-    vector<Coord> cells = lookup(p.getTheta()*180/M_PI, a);     
+    vector<Coord> cells = lookup(pAngle, a);
+
     for (int i = 0; i < cells.size(); i++)
     {
       Coord probCell;
@@ -147,97 +158,36 @@ float ParticleFilter::calculateWeight_LUT(Particle &p, int timestep)
         if (weanMap.prob[probCell.row][probCell.col] > wallProb)
         {
             float particleDistToWall = euclidDist(startCell,cells[i]);
-            float actualDistToWall = logLaserData[timestep].r[a];
-            accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
+            float actualDistToWall = logLaserData[timestep].r[a]/10.0;
+            accumWeights += invGauss(particleDistToWall,actualDistToWall,laserError);
             break;
         }
 
-        // we should probably build the actual weight distribution from class
+        else if  (weanMap.prob[probCell.row][probCell.col] == -1 && logLaserData[timestep].r[a] >= 8180)
+        {
+          break;
+        }
 
         // if the ray never hits a wall but the actual laser does, give it some small weight 
         else if (i == cells.size()-1 && logLaserData[timestep].r[a] <= 8180)
         {
-            accumWeights *= 0.001;
+            accumWeights += 0.00;
             break;
         }
         // if the ray never hits a wall and neither does the actual laser, give it some larger weight 
         else if (i == cells.size()-1 && logLaserData[timestep].r[a] > 8180)
         {
-            accumWeights *= 0.01;
+            accumWeights += 0.5;
             break;
         }
       }
+      else {
+        break;
+      }
     }
   }
-
 
   return accumWeights;
-}
-
-
-
-
-float ParticleFilter::calculateWeight(Particle &p, int timestep) {
-  float wallProb = 0.8;
-  float laserError = 0.5;  // cm
-  float accumWeights = 1;
-
-
-  Coord startCell;
-  startCell.row = min(int(round(p.getX())),800);
-  startCell.col = min(int(round(p.getY())),800);
-
-
-  for (int a = 0; a < 180; a++) 
-  {   
-    for (int i = 0; i < 800; i+=1)
-    {
-      float rowDist = sin(p.getTheta())*i;
-      float colDist = cos(p.getTheta())*i;
-
-      Coord cell;
-      cell.row = int(round(rowDist+p.getY()));
-      cell.col = int(round(colDist+p.getX()));
-
-
-      if (inGridBounds(cell))
-      {  
-        // if the ray hits a wall
-        if (weanMap.prob[cell.row][cell.col] >= wallProb)
-        {
-            float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
-            float actualDistToWall = logLaserData[timestep].r[a];
-            accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
-            break;
-        }
-        // have to decide what to do here
-        else if (weanMap.prob[cell.row][cell.col] == -1)
-        {}
-      }
-      // and here...
-      else
-      {}
-    }
-  }
-}
-
-
-
-void ParticleFilter::updateWeights_test()
-{
-  weights.clear();
-  intervals.clear();
-
-  weights.push_back(1000.);
-  intervals.push_back(0);
-
-  for (int i = 1; i < particles.size(); ++i) {
-    weights.push_back(0.1);
-    intervals.push_back(i);
-  }
-  intervals.push_back(particles.size());
-
-  return;
 }
 
 
@@ -249,25 +199,91 @@ void ParticleFilter::updateWeights_LUT(int timestep)
 
   for (int p = 0; p <= particles.size(); p++) {
     weights.push_back(calculateWeight_LUT(particles[p],timestep));
+    // cout << weights[p] << endl;
     intervals.push_back(p);
   }
-
   return;
 }
 
 
-void ParticleFilter::updateWeights_noLUT(int timestep)
-{
-  weights.clear();
-  intervals.clear();
+// float ParticleFilter::calculateWeight(Particle &p, int timestep) {
+//   float wallProb = 0.8;
+//   float laserError = 0.5;  // cm
+//   float accumWeights = 1;
 
-  for (int p = 0; p <= particles.size(); p++) {
-    weights.push_back(calculateWeight(particles[p],timestep));
-    intervals.push_back(p);
-  }
 
-  return;
-}
+//   Coord startCell;
+//   startCell.row = min(int(round(p.getX())),800);
+//   startCell.col = min(int(round(p.getY())),800);
+
+
+//   for (int a = 0; a < 180; a++) 
+//   {   
+//     for (int i = 0; i < 800; i+=1)
+//     {
+//       float rowDist = sin(p.getTheta())*i;
+//       float colDist = cos(p.getTheta())*i;
+
+//       Coord cell;
+//       cell.row = int(round(rowDist+p.getY()));
+//       cell.col = int(round(colDist+p.getX()));
+
+
+//       if (inGridBounds(cell))
+//       {  
+//         // if the ray hits a wall
+//         if (weanMap.prob[cell.row][cell.col] >= wallProb)
+//         {
+//             float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
+//             float actualDistToWall = logLaserData[timestep].r[a];
+//             accumWeights *= invGauss(particleDistToWall,actualDistToWall,laserError);
+//             break;
+//         }
+//         // have to decide what to do here
+//         else if (weanMap.prob[cell.row][cell.col] == -1)
+//         {}
+//       }
+//       // and here...
+//       else
+//       {}
+//     }
+//   }
+//   return accumWeights;
+// }
+
+
+
+// void ParticleFilter::updateWeights_test()
+// {
+//   weights.clear();
+//   intervals.clear();
+
+//   weights.push_back(1000.);
+//   intervals.push_back(0);
+
+//   for (int i = 1; i < particles.size(); ++i) {
+//     weights.push_back(0.1);
+//     intervals.push_back(i);
+//   }
+//   intervals.push_back(particles.size());
+
+//   return;
+// }
+
+
+
+// void ParticleFilter::updateWeights_noLUT(int timestep)
+// {
+//   weights.clear();
+//   intervals.clear();
+
+//   for (int p = 0; p <= particles.size(); p++) {
+//     weights.push_back(calculateWeight(particles[p],timestep));
+//     intervals.push_back(p);
+//   }
+
+//   return;
+// }
 
 
 

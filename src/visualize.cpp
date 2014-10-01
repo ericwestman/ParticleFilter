@@ -12,6 +12,8 @@ void ParticleFilter::dispParticles()
     circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
   }
 
+  // circle(frame, Point(50, 100), 4, Scalar_<float>(0.,1.,0.), -1);
+
   return;
 }
 

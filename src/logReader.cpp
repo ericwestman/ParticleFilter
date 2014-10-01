@@ -38,7 +38,7 @@ void ParticleFilter::readLog()
         odom.theta   = stof(elements[3]);
       	odom.ts 		 = stof(elements[4]);
       	logOdometryData.push_back(odom);
-        timestamps.push_back(odom.ts);
+        // timestamps.push_back(odom.ts);
       }
       else if (elements[0] == "L"){
       	LaserData laser;
@@ -49,12 +49,11 @@ void ParticleFilter::readLog()
       	laser.yl     = stof(elements[5]);
       	laser.thetal = stof(elements[6]);
       	laser.ts     = stof(elements[187]);
-        logLaserData.push_back(laser);
-        timestamps.push_back(laser.ts);
-
       	for (int i = 0; i < 180; i ++){
       		laser.r[i] = stoi(elements[i+7]);
       	}
+        logLaserData.push_back(laser);
+        timestamps.push_back(laser.ts);
       }
     }
     myfile.close();

@@ -38,11 +38,11 @@ public:
     y(y_val),
     theta(theta_val) {};
 
-  int getX() {return this->x;}
+  float getX() {return this->x;}
 
-  int getY() {return this->y;}
+  float getY() {return this->y;}
 
-  int getTheta() {return this->theta;}
+  float getTheta() {return this->theta;}
 
   void setX(int x_in) {this->x = x_in; return;}
 
