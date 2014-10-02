@@ -45,7 +45,7 @@ int main()
   for (int i = 100; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
     filter.visualize();
-    // filter.updateWeights(i);
+    // filter.updateWeights_test();
     filter.updateWeightsCV(i);
     filter.resampleParticles();
   }

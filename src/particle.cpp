@@ -64,15 +64,33 @@ float euclidDist(Coord start, Coord end)
 }
 
 
-float invGauss(float x, float mu, float sigma)
+float observationModel(float x, float mu)
 {
-  return exp(-((mu - x) * (mu - x)) / ((sigma * sigma) * 2.0)) / (sqrt(2 * M_PI * (sigma * sigma)));
+  // Gaussian component
+  float sigma_g = 5;
+  float g_max = 1.0;
+  float gaussian = g_max*exp(-((mu - x) * (mu - x)) / ((sigma_g * sigma_g) * 2.0));
+
+  // Max range component
+  float max_range_prob = g_max/4.0;
+  float max_range = (x > 818) ? max_range_prob : 0;
+
+  // Exponential component
+  float sigma_e = -0.005;
+  float a = 4;
+  float exponential = g_max/a*exp(sigma_e*x);
+
+  // Uniform component
+  float uniform = g_max / 10;
+
+  // cout << gaussian + exponential + uniform + max_range << endl;
+
+  return gaussian + exponential + uniform + max_range;
 }
 
 float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
   float wallProb = 0.8;
-  float laserError = 0.05;  // cm
-  float accumWeights = 1;
+  float particleWeight = 0;
 
   // frame = image.clone();
 
@@ -93,8 +111,10 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
 
     // alternative way of iterating through the line
     for(int i = 0; i < it.count; i++, ++it) {
-      if (it.pos().x >= 800 || it.pos().y >= 800) break;
-
+      if (it.pos().x >= 800 || it.pos().y >= 800) { 
+        particleWeight += log(0.1);
+        break;
+      }
       // if (a < 110 && a > 70) frame.at<cv::Point3f>(it.pos()) = cv::Point3f(1., 0., 0.);
       // else frame.at<cv::Point3f>(it.pos()) = cv::Point3f(0., 1., 0.);
 
@@ -107,12 +127,16 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
         int colDist = it.pos().x - startCell.col;
         
         float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
-        float actualDistToWall = logLaserData[timestep].r[a];
-        accumWeights += invGauss(particleDistToWall,actualDistToWall,laserError);
+        float laserDistToWall = logLaserData[timestep].r[a];
+        float p = observationModel(laserDistToWall, particleDistToWall);
+        particleWeight += log(p);
+        // particleWeight += log(p/(1-p));
+        //particleWeight *= observationModel(laserDistToWall, particleDistToWall, laserError);
         break;
       }
       // have to decide what to do here
       else if (val == -1) {
+        particleWeight += log(0.1);
         break;
       }
       
@@ -126,10 +150,28 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
   // }
   // cv::waitKey(0);
 
-  return accumWeights;
+  cout << exp(particleWeight) << endl;
+
+  return exp(particleWeight);
+  // return 1.0 - 1.0/(1.0 + exp(particleWeight));
 }
 
+void ParticleFilter::updateWeights_test()
+{
+  weights.clear();
+  intervals.clear();
 
+  weights.push_back(1000.);
+  intervals.push_back(0);
+
+  for (int i = 1; i < particles.size(); ++i) {
+    weights.push_back(0.1);
+    intervals.push_back(i);
+  }
+  intervals.push_back(particles.size());
+
+  return;
+}
 
 void ParticleFilter::updateWeightsCV(int &timestep)
 {
@@ -161,8 +203,6 @@ void ParticleFilter::resampleParticles()
   {
       // Generate random number using gen, distributed according to dist
       int r = (int) dist(generator);
-      // Sanity check
-      //assert(intervals[0] <= r && r <= *(end(intervals)-2));
       // Push the new particle into the vector
       particles.push_back(oldParticles[r]);
   }
