@@ -27,6 +27,10 @@ void ParticleFilter::drawParticles()
 
     // Assign random heading to particle
     Particle p = potentialParticles[j];
+
+
+    //Particle p(400.0,450.0,0.0);
+    //Particle p(100.0,150.0,0.0);
     p.setTheta(heading(mt));
     // cout << "ParticleTheta: " << p.getTheta() << " and random: " << heading(mt) << endl;
 
@@ -132,33 +136,37 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
         
         float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
         float laserDistToWall = logLaserData[timestep].r[a];
-        float p = observationModel(laserDistToWall, particleDistToWall);
+        float p = observationModel(laserDistToWall, particleDistToWall)*5.0;
+   
+
+        //cout << p << endl;
         particleWeight += log(p);
-        // particleWeight += log(p/(1-p));
+        
+        //particleWeight += log(p/(1-p));
         break;
       }
       // If the ray sees something outside the map that we don't know about, 
       else if (val == -1) {
-        particleWeight += log(0.1);
+        particleWeight += log(0.3);
         break;
       }
     }
 
-    // Optionally display every ray and the end point that it compares with the laser data
-    cv::circle(frame, it.pos(), 4, cv::Scalar_<float>(0.,0.,1.), -1);
-    cv::namedWindow( "Wean Map", cv::WINDOW_AUTOSIZE);
-    if (!frame.empty()) {
-      cv::imshow("Wean Map", frame);
-    }
-    cout << "Weight: " << particleWeight << " StartRow: " << startCell.row << " StartCol: " << startCell.col << " ItPosY: " << it.pos().y << " ItPosX: " << it.pos().x << endl;
-    cv::waitKey(0);
+    // // Optionally display every ray and the end point that it compares with the laser data
+    // cv::circle(frame, it.pos(), 4, cv::Scalar_<float>(0.,0.,1.), -1);
+    // cv::namedWindow( "Wean Map", cv::WINDOW_AUTOSIZE);
+    // if (!frame.empty()) {
+    //   cv::imshow("Wean Map", frame);
+    // }
+    // cout << "Weight: " << particleWeight << " StartRow: " << startCell.row << " StartCol: " << startCell.col << " ItPosY: " << it.pos().y << " ItPosX: " << it.pos().x << endl;
+    // cv::waitKey(1000);
 
   }
 
   // cout << exp(particleWeight) << endl;
 
   return exp(particleWeight);
-  // return 1.0 - 1.0/(1.0 + exp(particleWeight));
+  //return 1.0 - 1.0/(1.0 + exp(particleWeight));
 }
 
 void ParticleFilter::updateWeights_test()
