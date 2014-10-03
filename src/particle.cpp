@@ -92,7 +92,7 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
   float wallProb = 0.8;
   float particleWeight = 0;
 
-  // frame = image.clone();
+  frame = image.clone();
 
   Coord startCell;
   startCell.row = min(int(round(p.getX())),800);
@@ -111,16 +111,20 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
 
     // alternative way of iterating through the line
     for(int i = 0; i < it.count; i++, ++it) {
+
+      // Display the ray
+      if (a < 110 && a > 70) frame.at<cv::Point3f>(it.pos()) = cv::Point3f(1., 0., 0.);
+      else frame.at<cv::Point3f>(it.pos()) = cv::Point3f(0., 1., 0.);
+
+      // If the ray goes outside of the image before finding a wall, give low weight
       if (it.pos().x >= 800 || it.pos().y >= 800) { 
         particleWeight += log(0.1);
         break;
       }
-      // if (a < 110 && a > 70) frame.at<cv::Point3f>(it.pos()) = cv::Point3f(1., 0., 0.);
-      // else frame.at<cv::Point3f>(it.pos()) = cv::Point3f(0., 1., 0.);
 
       float val = image.at<cv::Point3f>(it.pos()).x;
 
-      // if the ray hits a wall
+      // If the ray hits a wall, then use the observation model
       if (1 - val >= wallProb && val >= 0)
       {
         int rowDist = it.pos().y - startCell.row;
@@ -131,26 +135,27 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
         float p = observationModel(laserDistToWall, particleDistToWall);
         particleWeight += log(p);
         // particleWeight += log(p/(1-p));
-        //particleWeight *= observationModel(laserDistToWall, particleDistToWall, laserError);
         break;
       }
-      // have to decide what to do here
+      // If the ray sees something outside the map that we don't know about, 
       else if (val == -1) {
         particleWeight += log(0.1);
         break;
       }
-      
     }
+
+    // Optionally display every ray and the end point that it compares with the laser data
+    cv::circle(frame, it.pos(), 4, cv::Scalar_<float>(0.,0.,1.), -1);
+    cv::namedWindow( "Wean Map", cv::WINDOW_AUTOSIZE);
+    if (!frame.empty()) {
+      cv::imshow("Wean Map", frame);
+    }
+    cout << "Weight: " << particleWeight << " StartRow: " << startCell.row << " StartCol: " << startCell.col << " ItPosY: " << it.pos().y << " ItPosX: " << it.pos().x << endl;
+    cv::waitKey(0);
+
   }
 
-  // Optionally show the ray casting
-  // cv::namedWindow( "Wean Map", cv::WINDOW_AUTOSIZE);
-  // if (!frame.empty()) {
-  //   cv::imshow("Wean Map", frame);
-  // }
-  // cv::waitKey(0);
-
-  cout << exp(particleWeight) << endl;
+  // cout << exp(particleWeight) << endl;
 
   return exp(particleWeight);
   // return 1.0 - 1.0/(1.0 + exp(particleWeight));

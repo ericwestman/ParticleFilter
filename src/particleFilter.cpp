@@ -39,12 +39,12 @@ int main()
 
   // Draw initial particles
   filter.drawParticles();
-  filter.visualize();
+  // filter.visualize();
 
   // Start the filter!
   for (int i = 100; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
-    filter.visualize();
+    // filter.visualize();
     // filter.updateWeights_test();
     filter.updateWeightsCV(i);
     filter.resampleParticles();
