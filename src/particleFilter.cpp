@@ -15,7 +15,7 @@ ParticleFilter::ParticleFilter()
 
   logName = "../data/log/robotdata1.log";
 
-  numParticles = 500;
+  numParticles = 5000;
 
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);

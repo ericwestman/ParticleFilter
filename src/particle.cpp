@@ -85,7 +85,7 @@ float observationModel(float x, float mu)
   float exponential = g_max/a*exp(sigma_e*x);
 
   // Uniform component
-  float uniform = g_max / 10;
+  float uniform = g_max / 6.0;
 
   // cout << gaussian + exponential + uniform + max_range << endl;
 
@@ -96,7 +96,8 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
   float wallProb = 0.8;
   float particleWeight = 0;
 
-  frame = image.clone();
+  // For drawing the individual rays / particles
+  // frame = image.clone();
 
   Coord startCell;
   startCell.row = min(int(round(p.getX())),800);
@@ -113,12 +114,18 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
     cv::LineIterator it(image, cv::Point(startCell.col, startCell.row), 
                                cv::Point(endCell.col, endCell.row), 8);
 
+
+    // // Display the ray of the laser in the corner
+    // int start = 150;
+    // int laserDist = logLaserData[timestep].r[a]/10.0;
+    // cv::Point laserStart = cv::Point(start, start);
+    // cv::Point laserEnd = cv::Point(start+laserDist*cos(a*M_PI/180), start+laserDist*sin(a*M_PI/180));
+    // if (a < 110 && a > 70) line(frame, laserStart, laserEnd, cv::Scalar_<float>(1., 0., 0.));
+    // else line(frame, laserStart, laserEnd, cv::Scalar_<float>(0., 1., 0.));
+
+
     // alternative way of iterating through the line
     for(int i = 0; i < it.count; i++, ++it) {
-
-      // Display the ray
-      if (a < 110 && a > 70) frame.at<cv::Point3f>(it.pos()) = cv::Point3f(1., 0., 0.);
-      else frame.at<cv::Point3f>(it.pos()) = cv::Point3f(0., 1., 0.);
 
       // If the ray goes outside of the image before finding a wall, give low weight
       if (it.pos().x >= 800 || it.pos().y >= 800) { 
@@ -135,31 +142,35 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
         int colDist = it.pos().x - startCell.col;
         
         float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
-        float laserDistToWall = logLaserData[timestep].r[a];
-        float p = observationModel(laserDistToWall, particleDistToWall)*5.0;
+        float laserDistToWall = logLaserData[timestep].r[a]/10.0; // convert to grid cell units!
+        float p = observationModel(laserDistToWall, particleDistToWall);
    
 
         //cout << p << endl;
         particleWeight += log(p);
-        
         //particleWeight += log(p/(1-p));
+
+        // Display the ray from the particle
+        // if (a < 110 && a > 70) line(frame, cv::Point(startCell.col, startCell.row), it.pos(), cv::Scalar_<float>(1., 0., 0.));
+        // else line(frame, cv::Point(startCell.col, startCell.row), it.pos(), cv::Scalar_<float>(0., 1., 0.));
+
         break;
       }
-      // If the ray sees something outside the map that we don't know about, 
+      // If the ray sees something outside the map that we don't know about, give it a lower weight
       else if (val == -1) {
         particleWeight += log(0.3);
         break;
       }
     }
 
-    // // Optionally display every ray and the end point that it compares with the laser data
+    // Optionally display every ray and the end point that it compares with the laser data
     // cv::circle(frame, it.pos(), 4, cv::Scalar_<float>(0.,0.,1.), -1);
     // cv::namedWindow( "Wean Map", cv::WINDOW_AUTOSIZE);
     // if (!frame.empty()) {
     //   cv::imshow("Wean Map", frame);
     // }
     // cout << "Weight: " << particleWeight << " StartRow: " << startCell.row << " StartCol: " << startCell.col << " ItPosY: " << it.pos().y << " ItPosX: " << it.pos().x << endl;
-    // cv::waitKey(1000);
+    // cv::waitKey(20);
 
   }
 
