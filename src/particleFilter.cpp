@@ -42,7 +42,7 @@ int main()
   filter.visualize();
 
   // Start the filter!
-  for (int i = 100; i < filter.timestamps.size(); i++) {
+  for (int i = 1; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
     filter.visualize();
     // filter.updateWeights_test();

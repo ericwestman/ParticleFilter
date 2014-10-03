@@ -24,16 +24,10 @@ void ParticleFilter::drawParticles()
   for(int i = 0; i < numParticles; ++i){
     // Get random particle from map
     int j = rand() % potentialParticles.size();
-
-    // Assign random heading to particle
     Particle p = potentialParticles[j];
 
-
-    //Particle p(400.0,450.0,0.0);
-    //Particle p(100.0,150.0,0.0);
+    // Assign random heading to particle
     p.setTheta(heading(mt));
-    // cout << "ParticleTheta: " << p.getTheta() << " and random: " << heading(mt) << endl;
-
     particles.push_back(p);
   }
   return;
@@ -85,11 +79,12 @@ float observationModel(float x, float mu)
   float exponential = g_max/a*exp(sigma_e*x);
 
   // Uniform component
-  float uniform = g_max / 6.0;
+  float uniform = g_max / 4.0;
 
   // cout << gaussian + exponential + uniform + max_range << endl;
 
   return gaussian + exponential + uniform + max_range;
+  // return gaussian + uniform;
 }
 
 float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
@@ -129,7 +124,7 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
 
       // If the ray goes outside of the image before finding a wall, give low weight
       if (it.pos().x >= 800 || it.pos().y >= 800) { 
-        particleWeight += log(0.1);
+        // particleWeight += log(0.1);
         break;
       }
 
@@ -158,7 +153,7 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
       }
       // If the ray sees something outside the map that we don't know about, give it a lower weight
       else if (val == -1) {
-        particleWeight += log(0.3);
+        // particleWeight += log(0.3);
         break;
       }
     }
