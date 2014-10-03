@@ -12,8 +12,6 @@ void ParticleFilter::dispParticles()
     circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
   }
 
-  // circle(frame, Point(50, 100), 4, Scalar_<float>(0.,1.,0.), -1);
-
   return;
 }
 
@@ -26,7 +24,20 @@ void ParticleFilter::dispAllParticles()
     circle(frame, Point(particleY, particleX), 4, Scalar_<float>(1.,0.,0.), -1);
   }
 
-  // circle(frame, Point(50, 100), 4, Scalar_<float>(0.,1.,0.), -1);
+  return;
+}
+
+void ParticleFilter::dispTestParticles()
+{
+  for(int i = 0; i< numTestParticles; i++) {
+    int particleX = particles[i].getX();
+    int particleY = particles[i].getY();
+
+    if (i < numTestParticles/2)
+      circle(frame, Point(particleY, particleX), 4, Scalar_<float>(1.,0.,0.), -1);
+    else
+      circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
+  }
 
   return;
 }
@@ -56,3 +67,20 @@ void ParticleFilter::visualize()
   waitKey(10);                                // Wait for a keystroke in the window
   return;
 }
+
+
+void ParticleFilter::visualizeTestParticles()
+{
+  frame = image.clone();
+  // dispParticles();
+  dispTestParticles();
+
+  namedWindow( "Wean Map", WINDOW_AUTOSIZE);  // Create a window for display.
+  if (!frame.empty()) {
+    imshow("Wean Map", frame);                  // Show our image inside it
+  }
+
+  waitKey(0);                                // Wait for a keystroke in the window
+  return;
+}
+

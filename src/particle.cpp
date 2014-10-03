@@ -33,6 +33,31 @@ void ParticleFilter::drawParticles()
   return;
 }
 
+void ParticleFilter::drawTestParticles()
+{
+  // Set up random number generator for heading
+  std::random_device rd;
+  std::mt19937_64 mt(rd());
+  std::uniform_real_distribution<float> heading(-M_PI, M_PI);
+
+  Particle p = Particle(0.,0.,0.);
+
+  for(int i = 0; i < numTestParticles; ++i){
+    if (i < numTestParticles/2) {
+      // Get random particle around the neighborhood of the real robot
+      p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
+    }
+    else {
+      int j = rand() % potentialParticles.size();
+      p = potentialParticles[j];
+      p.setTheta(heading(mt));
+    }
+    // cout << "X " << p.getX() << " Y " << p.getY() << " T " << p.getTheta() << endl;
+    particles.push_back(p);
+  }
+  return;
+}
+
 void ParticleFilter::motionModel(int &timestep)
 {
 	for (int i = 0; i < particles.size(); ++i) {
@@ -48,6 +73,12 @@ void ParticleFilter::motionModel(int &timestep)
                          + yrand; // random displacement in grid cell units
     float t = particles[i].getTheta() + logLaserData[timestep].theta - logLaserData[timestep - 1].theta 
                          + trand; // random displacement in radians
+
+    // Check bounds
+    if (x > 800.0)  x = 800.0;
+    if (x < 0.0)    x = 0.0;
+    if (y > 800.0)  y = 800.0;
+    if (y < 0.0)    y = 0.0;
 
 		particles[i] = Particle(x, y, t);
 
@@ -65,31 +96,29 @@ float euclidDist(Coord start, Coord end)
 float observationModel(float x, float mu)
 {
   // Gaussian component
-  float sigma_g = 5;
+  float sigma_g = 15;
   float g_max = 1.0;
   float gaussian = g_max*exp(-((mu - x) * (mu - x)) / ((sigma_g * sigma_g) * 2.0));
 
   // Max range component
-  float max_range_prob = g_max/4.0;
-  float max_range = (x > 818) ? max_range_prob : 0;
-
-  // Exponential component
-  float sigma_e = -0.005;
-  float a = 4;
-  float exponential = g_max/a*exp(sigma_e*x);
+  float max_range_prob = g_max/3.0;
+  float max_range = (x > 818.0) ? max_range_prob : 0.0;
 
   // Uniform component
-  float uniform = g_max / 4.0;
+  float uniform = g_max * 1.0/4.0;
 
-  // cout << gaussian + exponential + uniform + max_range << endl;
+  // Exponential component
+  float sigma_e = -0.0008;
+  float a = g_max*1.0/3.0;
+  float exponential = a*exp(sigma_e*x);
 
+  // return max( max ( max(gaussian, uniform), max_range), exponential);
   return gaussian + exponential + uniform + max_range;
-  // return gaussian + uniform;
 }
 
 float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
   float wallProb = 0.8;
-  float particleWeight = 0;
+  float particleWeight = 0.0;
 
   // For drawing the individual rays / particles
   // frame = image.clone();
@@ -123,25 +152,28 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
     for(int i = 0; i < it.count; i++, ++it) {
 
       // If the ray goes outside of the image before finding a wall, give low weight
-      if (it.pos().x >= 800 || it.pos().y >= 800) { 
-        // particleWeight += log(0.1);
+      if (it.pos().x >= 800.0 || it.pos().y >= 800.0) { 
+        particleWeight += log(0.1);
         break;
       }
 
       float val = image.at<cv::Point3f>(it.pos()).x;
 
+      // If the ray sees something outside the map that we don't know about, give it a lower weight
+      if (val < 0) {
+        particleWeight += log(0.1);
+        break;
+      }
       // If the ray hits a wall, then use the observation model
-      if (1 - val >= wallProb && val >= 0)
+      else if (1 - val >= wallProb)
       {
         int rowDist = it.pos().y - startCell.row;
         int colDist = it.pos().x - startCell.col;
         
         float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
         float laserDistToWall = logLaserData[timestep].r[a]/10.0; // convert to grid cell units!
-        float p = observationModel(laserDistToWall, particleDistToWall);
+        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.05);
    
-
-        //cout << p << endl;
         particleWeight += log(p);
         //particleWeight += log(p/(1-p));
 
@@ -149,11 +181,6 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
         // if (a < 110 && a > 70) line(frame, cv::Point(startCell.col, startCell.row), it.pos(), cv::Scalar_<float>(1., 0., 0.));
         // else line(frame, cv::Point(startCell.col, startCell.row), it.pos(), cv::Scalar_<float>(0., 1., 0.));
 
-        break;
-      }
-      // If the ray sees something outside the map that we don't know about, give it a lower weight
-      else if (val == -1) {
-        // particleWeight += log(0.3);
         break;
       }
     }
@@ -169,8 +196,8 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
 
   }
 
-  // cout << exp(particleWeight) << endl;
-
+  cout << exp(particleWeight) << endl;
+  
   return exp(particleWeight);
   //return 1.0 - 1.0/(1.0 + exp(particleWeight));
 }

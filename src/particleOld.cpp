@@ -120,7 +120,7 @@ float euclidDist(Coord start, Coord end)
 float invGauss(float x, float mu, float sigma)
 {
   return exp(-((mu - x) * (mu - x)) / ((sigma * sigma) * 2.0)) / (sqrt(2 * M_PI * (sigma * sigma)));
-
+}
 
 
 bool inGridBounds(Coord cell) 

@@ -12,11 +12,11 @@ g_max = 1;
 
 % Exponential parameters
 sigma_e = -0.005;
-b = 4;
+b = 2;
 a = g_max/b;
 
 % Uniform parameters
-uniform = g_max/10;
+uniform = g_max/2;
 
 
 % input vector
@@ -24,11 +24,15 @@ x = linspace(start,final,n);
 
 
 exponential = a*exp(sigma_e.*x);
+
 normal_dist = exp(-1/2 .* ((mu-x)/(sigma_g)).^2);
 
 max_range = zeros(1, length(x));
 max_range(ceil(818*n/final):end) = g_max/4;
 
+exponential + normal_dist + max_range + uniform
+
+observation_model = max();
 
 figure; hold on;
-plot(x,exponential + normal_dist + max_range + uniform,'r-');
+plot(x,observation_model,'r-');

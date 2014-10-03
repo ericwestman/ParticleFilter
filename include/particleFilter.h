@@ -16,6 +16,7 @@ public:
 
   // Particle filter methods
   void drawParticles();
+  void drawTestParticles();
   void motionModel(int &timestep);
   float calculateWeight_LUT(Particle &p, int &timestep);
   float calculateWeight(Particle &p, int &timestep);
@@ -29,8 +30,10 @@ public:
   // Visualize methods
   void dispParticles();
   void dispAllParticles();
+  void dispTestParticles();
   void loadMapImage();
   void visualize();
+  void visualizeTestParticles();
 
   std::vector<float> timestamps;
 
@@ -48,6 +51,7 @@ private:
 
   // Particle data
   int numParticles;
+  int numTestParticles;
   std::vector<Particle> potentialParticles;
   std::vector<Particle> particles;
   std::vector<float> weights;
