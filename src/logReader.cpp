@@ -38,7 +38,6 @@ void ParticleFilter::readLog()
         odom.theta   = stof(elements[3]);
       	odom.ts 		 = stof(elements[4]);
       	logOdometryData.push_back(odom);
-        // timestamps.push_back(odom.ts);
       }
       else if (elements[0] == "L"){
       	LaserData laser;
