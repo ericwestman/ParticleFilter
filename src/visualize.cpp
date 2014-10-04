@@ -15,13 +15,41 @@ void ParticleFilter::dispParticles()
   return;
 }
 
+
+int getMaxWeightParticle(vector<float> weights)
+{
+
+	// get the index of the highest weighted particle
+	float weightMax = 0;
+    int maxIdx = 0;
+    for (int i = 0; i < weights.size(); i++) 
+    {
+    	if (weights[i] > weightMax)
+    	{
+    		weightMax = weights[i];
+    		maxIdx = i;
+    	}
+    }
+    return maxIdx;
+}
+
+
+
 void ParticleFilter::dispAllParticles()
 {
+
+  int maxIdx = getMaxWeightParticle(weights);
+
   for(int i = 0; i< numParticles; i++) {
     int particleX = particles[i].getX();
     int particleY = particles[i].getY();
 
-    circle(frame, Point(particleY, particleX), 4, Scalar_<float>(1.,0.,0.), -1);
+    if (i != maxIdx)
+    	circle(frame, Point(particleY, particleX), 4, Scalar_<float>(1.,0.,0.), -1);
+    else
+    	circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
+
+
   }
 
   return;

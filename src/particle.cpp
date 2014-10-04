@@ -22,9 +22,12 @@ void ParticleFilter::drawParticles()
   std::uniform_real_distribution<float> heading(-M_PI, M_PI);
 
   for(int i = 0; i < numParticles; ++i){
+
     // Get random particle from map
     int j = rand() % potentialParticles.size();
     Particle p = potentialParticles[j];
+
+    //Particle p = Particle(400.0,410.0,-M_PI/2);
 
     // Assign random heading to particle
     p.setTheta(heading(mt));
@@ -42,28 +45,32 @@ void ParticleFilter::drawTestParticles()
 
   Particle p = Particle(0.,0.,0.);
 
-  for(int i = 0; i < numTestParticles; ++i){
-    if (i == 0) {
-      // Get random particle around the neighborhood of the real robot
-      p = Particle(400.0, 410.0, -M_PI/2);//-M_PI/2);
-      // p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
-    }
-    else if (i == 1){
-      // int j = rand() % potentialParticles.size();
-      // p = potentialParticles[j];
-      // p.setTheta(heading(mt));
+  // for(int i = 0; i < numTestParticles; ++i)
+  // {
+  //   if (i == 0) {
+  //     // Get random particle around the neighborhood of the real robot
+  //     p = Particle(400.0, 410.0, -M_PI/2);//-M_PI/2);
+  //     // p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
+  //   }
+  //   else if (i == 1){
+  //     // int j = rand() % potentialParticles.size();
+  //     // p = potentialParticles[j];
+  //     // p.setTheta(heading(mt));
 
-      p = Particle(650.0, 465.0, -M_PI/2);//M_PI/2);
+  //     p = Particle(650.0, 465.0, -M_PI/2);//M_PI/2);
 
-    }
-    else {
-      int j = rand() % potentialParticles.size();
-      p = potentialParticles[j];
-      p.setTheta(heading(mt));
-    }
-    // cout << "X " << p.getX() << " Y " << p.getY() << " T " << p.getTheta() << endl;
-    particles.push_back(p);
-  }
+  //   }
+  //   else {
+  //     int j = rand() % potentialParticles.size();
+  //     p = potentialParticles[j];
+  //     p.setTheta(heading(mt));
+  //   }
+
+
+
+  //   // cout << "X " << p.getX() << " Y " << p.getY() << " T " << p.getTheta() << endl;
+  //   particles.push_back(p);
+  // }
   return;
 }
 
@@ -127,7 +134,7 @@ float observationModel(float x, float mu)
 }
 
 float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
-  float wallProb = 0.8;
+  float wallProb = 0.55;
   float particleWeight = 0.0;
 
   // For drawing the individual rays / particles
@@ -137,11 +144,11 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
   startCell.row = min(int(round(p.getX())),800);
   startCell.col = min(int(round(p.getY())),800);
 
-  for (int a = 0; a < 180; a++) {
+  for (int a = 0; a < 180; a+=5) {
 
     Coord endCell;
-    endCell.row = int(round(p.getX()+800*cos(p.getTheta()+(a-90)*M_PI/180)));
-    endCell.col = int(round(p.getY()+800*sin(p.getTheta()+(a-90)*M_PI/180)));
+    endCell.row = int(round(p.getX()+200*cos(p.getTheta()+(a-90)*M_PI/180)));
+    endCell.col = int(round(p.getY()+200*sin(p.getTheta()+(a-90)*M_PI/180)));
 
     // grabs pixels along the line (pt1, pt2)
     // from 8-bit 3-channel image to the buffer
@@ -182,7 +189,12 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
         
         float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
         float laserDistToWall = logLaserData[timestep].r[a]/10.0; // convert to grid cell units!
-        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.02);
+        if (laserDistToWall > 200.0)
+        {
+        	laserDistToWall = 200.0;
+        }
+
+        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.2);
    
         particleWeight += log(p);
         //particleWeight += log(p/(1-p));
