@@ -17,14 +17,14 @@ public:
   // Particle filter methods
   void drawParticles();
   void drawTestParticles();
-  void motionModel(int &timestep);
-  float calculateWeight_LUT(Particle &p, int &timestep);
-  float calculateWeight(Particle &p, int &timestep);
-  float calculateWeightCV(Particle &p, int &timestep);
+  void motionModel(int timestep);
+  float calculateWeight_LUT(Particle &p, int timestep);
+  float calculateWeight(Particle &p, int timestep);
+  float calculateWeightCV(Particle &p, int timestep);
   void updateWeights_test();
-  void updateWeights_LUT(int &timestep);
-  void updateWeights(int &timestep);
-  void updateWeightsCV(int &timestep);
+  void updateWeights_LUT(int timestep);
+  void updateWeights(int timestep);
+  void updateWeightsCV(int timestep);
   void resampleParticles();
 
   // Visualize methods
@@ -36,11 +36,6 @@ public:
   void visualizeTestParticles();
 
   std::vector<float> timestamps;
-
-  // ray caster lookup table
-  void buildRayCasterLUT();
-  std::vector<Coord> lookup(int &robotTheta, int &angle);
-  std::vector<std::vector<Coord>> RAY_CAST_LUT;
 
 private:
   // Data pertaining to map

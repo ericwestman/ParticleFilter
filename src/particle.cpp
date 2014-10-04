@@ -43,31 +43,37 @@ void ParticleFilter::drawTestParticles()
   Particle p = Particle(0.,0.,0.);
 
   for(int i = 0; i < numTestParticles; ++i){
-    if (i == 0) {
-      // Get random particle around the neighborhood of the real robot
-      p = Particle(400.0, 410.0, -M_PI/2);//-M_PI/2);
-      // p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
-    }
-    else if (i == 1){
-      // int j = rand() % potentialParticles.size();
-      // p = potentialParticles[j];
-      // p.setTheta(heading(mt));
 
-      p = Particle(650.0, 465.0, -M_PI/2);//M_PI/2);
+    // Test stuff
+    // if (i == 0) {
+    //   // Get random particle around the neighborhood of the real robot
+    //   p = Particle(400.0, 410.0, -M_PI/2);//-M_PI/2);
+    //   // p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
+    // }
+    // else if (i == 1){
+    //   // int j = rand() % potentialParticles.size();
+    //   // p = potentialParticles[j];
+    //   // p.setTheta(heading(mt));
 
-    }
-    else {
-      int j = rand() % potentialParticles.size();
-      p = potentialParticles[j];
-      p.setTheta(heading(mt));
-    }
+    //   p = Particle(650.0, 465.0, -M_PI/2);//M_PI/2);
+
+    // }
+    // else {
+    //   int j = rand() % potentialParticles.size();
+    //   p = potentialParticles[j];
+    //   p.setTheta(heading(mt));
+    // }
+
+    p = Particle(400.0+ rand() % 5, 410.0+ rand() % 5, -M_PI/2 + rand() % 1); //-M_PI/2);
+    //   // p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
+
     // cout << "X " << p.getX() << " Y " << p.getY() << " T " << p.getTheta() << endl;
     particles.push_back(p);
   }
   return;
 }
 
-void ParticleFilter::motionModel(int &timestep)
+void ParticleFilter::motionModel(int timestep)
 {
 	for (int i = 0; i < particles.size(); ++i) {
 		float xrand = xy_normal(generator);
@@ -96,12 +102,6 @@ void ParticleFilter::motionModel(int &timestep)
 }
 
 
-float euclidDist(Coord start, Coord end) 
-{
-  return sqrt(pow((start.row - end.row),2) + pow((start.col - end.col),2));
-}
-
-
 float observationModel(float x, float mu)
 {
   // Gaussian component
@@ -126,21 +126,19 @@ float observationModel(float x, float mu)
   // return gaussian + uniform + max_range;
 }
 
-float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
+float ParticleFilter::calculateWeightCV(Particle &p, int timestep) {
   float wallProb = 0.8;
   float particleWeight = 0.0;
 
   // For drawing the individual rays / particles
   // frame = image.clone();
 
-  Coord startCell;
-  startCell.row = min(int(round(p.getX())),800);
-  startCell.col = min(int(round(p.getY())),800);
+  ImageCoord startCell = ImageCoord(p.getLoc());
 
   for (int a = 0; a < 180; a++) {
 
-    Coord endCell;
-    endCell.row = int(round(p.getX()+800*cos(p.getTheta()+(a-90)*M_PI/180)));
+    ImageCoord endCell = ImageCoord();
+    endCell.row = 800 - int(round(p.getX()+800*cos(p.getTheta()+(a-90)*M_PI/180)));
     endCell.col = int(round(p.getY()+800*sin(p.getTheta()+(a-90)*M_PI/180)));
 
     // grabs pixels along the line (pt1, pt2)
@@ -202,7 +200,7 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
     //   cv::imshow("Wean Map", frame);
     // }
     // cout << "Weight: " << particleWeight << " StartRow: " << startCell.row << " StartCol: " << startCell.col << " ItPosY: " << it.pos().y << " ItPosX: " << it.pos().x << endl;
-    // cv::waitKey(0);
+    // cv::waitKey(10);
 
   }
 
@@ -229,7 +227,7 @@ void ParticleFilter::updateWeights_test()
   return;
 }
 
-void ParticleFilter::updateWeightsCV(int &timestep)
+void ParticleFilter::updateWeightsCV(int timestep)
 {
   weights.clear();
   intervals.clear();

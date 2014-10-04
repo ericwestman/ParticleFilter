@@ -16,73 +16,74 @@ ParticleFilter::ParticleFilter()
   logName = "../data/log/robotdata1.log";
 
   numParticles = 5000;
-  numTestParticles = 3;
+  numTestParticles = 300;
 
 
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
-  xy_normal = std::normal_distribution<double>(0.0,2.0);
-  theta_normal = std::normal_distribution<double>(0.0,2.0*M_PI/180);
+  xy_normal = std::normal_distribution<double>(0.0,1.0);
+  theta_normal = std::normal_distribution<double>(0.0,1.0*M_PI/180);
 }
 
-// int main()
-// {
-// 	// Setup for random number generator
-// 	srand(time(NULL));
-
-//   // Initialize our particle filter
-//   ParticleFilter filter;
-
-// 	// Load occupancy map of wean hall and data from log
-//   filter.readMap();
-//   filter.loadMapImage();
-//   filter.readLog();
-
-//   // Draw initial particles
-//   filter.drawParticles();
-//   filter.visualize();
-
-//   // Start the filter!
-//   for (int i = 1; i < filter.timestamps.size(); i++) {
-//     filter.motionModel(i);
-//     filter.visualize();
-//     // filter.updateWeights_test();
-//     filter.updateWeightsCV(i);
-//     filter.resampleParticles();
-//   }
-
-//   std::cout << "Done!\n";
-// }
-
-// Test Particles
 int main()
 {
-  // Setup for random number generator
-  srand(time(NULL));
+	// Setup for random number generator
+	srand(time(NULL));
 
   // Initialize our particle filter
   ParticleFilter filter;
 
-  // Load occupancy map of wean hall and data from log
+	// Load occupancy map of wean hall and data from log
   filter.readMap();
   filter.loadMapImage();
   filter.readLog();
 
   // Draw initial particles
-  cout << "Drawing test particles " << endl;
-  filter.drawTestParticles();
-  int j = 0;
-  filter.updateWeightsCV(j);
-  filter.visualizeTestParticles();
+  filter.drawParticles();
+  filter.visualize();
 
   // Start the filter!
   for (int i = 1; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
-    filter.visualizeTestParticles();
+    filter.visualize();
+    // filter.updateWeights_test();
     filter.updateWeightsCV(i);
     filter.resampleParticles();
   }
 
   std::cout << "Done!\n";
 }
+
+// Test Particles
+// int main()
+// {
+//   // Setup for random number generator
+//   srand(time(NULL));
+
+//   // Initialize our particle filter
+//   ParticleFilter filter;
+
+//   // Load occupancy map of wean hall and data from log
+//   filter.readMap();
+//   filter.loadMapImage();
+//   filter.readLog();
+
+//   // Draw initial particles
+//   cout << "Drawing test particles " << endl;
+//   filter.drawTestParticles();
+//   filter.updateWeightsCV(0);
+//   // filter.visualizeTestParticles();
+//   filter.visualize();
+
+//   // Start the filter!
+//   for (int i = 1; i < filter.timestamps.size(); i++) {
+//     filter.motionModel(i);
+//     // filter.visualizeTestParticles();
+//     filter.visualize();
+//     filter.updateWeightsCV(i);
+//     filter.resampleParticles();
+//   }
+
+//   std::cout << "Done!\n";
+// }
 

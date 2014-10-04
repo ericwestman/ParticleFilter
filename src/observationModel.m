@@ -36,4 +36,4 @@ plot(x,exponential + normal_dist + max_range + uniform,'r-');
 %% Plot new distribution
 observation_model = max(max(max(exponential,normal_dist),max_range),uniform);
 observation_model(1) = 0;
-plot(x,observation_model,'b-');
+plot(x,observation_model.^(1/10),'b-');
