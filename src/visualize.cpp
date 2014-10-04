@@ -37,6 +37,12 @@ void ParticleFilter::dispTestParticles()
       circle(frame, Point(particleY, particleX), 4, Scalar_<float>(1.,0.,0.), -1);
     else
       circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
+
+    if (particles[i].getX() < 280 && particles[i].getX() > 270 && particles[i].getY() < 430 && particles[i].getY() > 420)
+      cout << "Good particle weight: " << weights[i] << endl;
+    else 
+      cout << "Bad particle weight: " << weights[i] << endl;
+
   }
 
   return;

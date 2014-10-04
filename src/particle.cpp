@@ -43,9 +43,18 @@ void ParticleFilter::drawTestParticles()
   Particle p = Particle(0.,0.,0.);
 
   for(int i = 0; i < numTestParticles; ++i){
-    if (i < numTestParticles/2) {
+    if (i == 0) {
       // Get random particle around the neighborhood of the real robot
-      p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
+      p = Particle(400.0, 410.0, -M_PI/2);//-M_PI/2);
+      // p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
+    }
+    else if (i == 1){
+      // int j = rand() % potentialParticles.size();
+      // p = potentialParticles[j];
+      // p.setTheta(heading(mt));
+
+      p = Particle(650.0, 465.0, -M_PI/2);//M_PI/2);
+
     }
     else {
       int j = rand() % potentialParticles.size();
@@ -114,6 +123,7 @@ float observationModel(float x, float mu)
 
   // return max( max ( max(gaussian, uniform), max_range), exponential);
   return gaussian + exponential + uniform + max_range;
+  // return gaussian + uniform + max_range;
 }
 
 float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
@@ -172,7 +182,7 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
         
         float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
         float laserDistToWall = logLaserData[timestep].r[a]/10.0; // convert to grid cell units!
-        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.05);
+        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.02);
    
         particleWeight += log(p);
         //particleWeight += log(p/(1-p));
@@ -192,11 +202,11 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
     //   cv::imshow("Wean Map", frame);
     // }
     // cout << "Weight: " << particleWeight << " StartRow: " << startCell.row << " StartCol: " << startCell.col << " ItPosY: " << it.pos().y << " ItPosX: " << it.pos().x << endl;
-    // cv::waitKey(20);
+    // cv::waitKey(0);
 
   }
 
-  cout << exp(particleWeight) << endl;
+  // cout << exp(particleWeight) << endl;
   
   return exp(particleWeight);
   //return 1.0 - 1.0/(1.0 + exp(particleWeight));
