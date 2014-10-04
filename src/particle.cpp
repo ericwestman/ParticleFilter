@@ -87,7 +87,7 @@ void ParticleFilter::motionModel(int &timestep)
 												 + xrand; // random displacement in grid cell units
 		float y = particles[i].getY() + (logLaserData[timestep].y - logLaserData[timestep - 1].y)/10.0
                          + yrand; // random displacement in grid cell units
-    float t = particles[i].getTheta() + logLaserData[timestep].theta - logLaserData[timestep - 1].theta 
+    	float t = particles[i].getTheta() + logLaserData[timestep].theta - logLaserData[timestep - 1].theta 
                          + trand; // random displacement in radians
 
     // Check bounds
@@ -140,6 +140,8 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
   // For drawing the individual rays / particles
   // frame = image.clone();
 
+  int laserRange = 500;
+
   Coord startCell;
   startCell.row = min(int(round(p.getX())),800);
   startCell.col = min(int(round(p.getY())),800);
@@ -147,8 +149,8 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
   for (int a = 0; a < 180; a+=5) {
 
     Coord endCell;
-    endCell.row = int(round(p.getX()+200*cos(p.getTheta()+(a-90)*M_PI/180)));
-    endCell.col = int(round(p.getY()+200*sin(p.getTheta()+(a-90)*M_PI/180)));
+    endCell.row = int(round(p.getX()+laserRange*cos(p.getTheta()+(a-90)*M_PI/180)));
+    endCell.col = int(round(p.getY()+laserRange*sin(p.getTheta()+(a-90)*M_PI/180)));
 
     // grabs pixels along the line (pt1, pt2)
     // from 8-bit 3-channel image to the buffer
@@ -166,7 +168,7 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
 
 
     // alternative way of iterating through the line
-    for(int i = 0; i < it.count; i++, ++it) {
+    for(int i = 0; i < it.count; i+=5, ++it) {
 
       // If the ray goes outside of the image before finding a wall, give low weight
       if (it.pos().x >= 800.0 || it.pos().y >= 800.0) { 
@@ -189,9 +191,9 @@ float ParticleFilter::calculateWeightCV(Particle &p, int &timestep) {
         
         float particleDistToWall = sqrt(rowDist*rowDist + colDist*colDist);
         float laserDistToWall = logLaserData[timestep].r[a]/10.0; // convert to grid cell units!
-        if (laserDistToWall > 200.0)
+        if (laserDistToWall > laserRange*1.0)
         {
-        	laserDistToWall = 200.0;
+        	laserDistToWall = laserRange*1.0;
         }
 
         float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.2);

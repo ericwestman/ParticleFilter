@@ -16,6 +16,34 @@ void ParticleFilter::dispParticles()
 }
 
 
+Scalar_<float> getColor(int i)
+{
+// fills in a gradient from the color <sr,sg,sb> to <er,eg,eb>
+
+	int steps = 100;
+	float n;
+	unsigned char r, g, b;
+
+	float sr = 0;
+	float sg = 0;
+	float sb = 1;
+
+	float er = 1;
+	float eg = 0;
+	float eb = 0;
+
+	for( i = 0; i < steps; i++ )
+	{
+		n = (float)i / (float) (steps-1);
+		r = sr * (1.0f-n) + er * n;
+		g = sg * (1.0f-n) + eg * n;
+		b = sb * (1.0f-n) + eb * n;
+
+	}
+	return Scalar_<float>(r,g,b);
+}
+
+
 int getMaxWeightParticle(vector<float> weights)
 {
 
@@ -45,7 +73,7 @@ void ParticleFilter::dispAllParticles()
     int particleY = particles[i].getY();
 
     if (i != maxIdx)
-    	circle(frame, Point(particleY, particleX), 4, Scalar_<float>(1.,0.,0.), -1);
+    	circle(frame, Point(particleY, particleX), 1, Scalar_<float>(1.,0.,0.), -1);
     else
     	circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
 
@@ -62,9 +90,9 @@ void ParticleFilter::dispTestParticles()
     int particleY = particles[i].getY();
 
     if (i < numTestParticles/2)
-      circle(frame, Point(particleY, particleX), 4, Scalar_<float>(1.,0.,0.), -1);
+      circle(frame, Point(particleY, particleX), 1, Scalar_<float>(1.,0.,0.), -1);
     else
-      circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
+      circle(frame, Point(particleY, particleX), 1, Scalar_<float>(0.,0.,1.), -1);
 
     if (particles[i].getX() < 280 && particles[i].getX() > 270 && particles[i].getY() < 430 && particles[i].getY() > 420)
       cout << "Good particle weight: " << weights[i] << endl;
