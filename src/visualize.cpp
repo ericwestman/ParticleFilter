@@ -15,7 +15,6 @@ void ParticleFilter::dispParticles()
   return;
 }
 
-
 int getMaxWeightParticle(vector<float>& weights)
 {
 
@@ -34,7 +33,6 @@ int getMaxWeightParticle(vector<float>& weights)
 }
 
 
-
 void ParticleFilter::dispAllParticles()
 {
 
@@ -44,13 +42,12 @@ void ParticleFilter::dispAllParticles()
     int particleX = particles[i].getX();
     int particleY = particles[i].getY();
 
-    float color = weights[i]/((double)weights[maxIdx]);
+    float color = weights[i]/((double) weights[maxIdx]);
 
     // circle(frame, Point(particleX, 800 - particleY), 4, Scalar_<float>(color,color,color), -1);
     // ImageCoord c = ImageCoord(particles[i].getLoc());
     // cout << particleY << " " << 800 - particleX << " " << color << " " << endl;
-    frame.at<Point3f>(800 - particleY, particleX) = Point3f(1-color,0,color);
-
+    frame.at<Point3f>(800 - particleY, particleX) = Point3f(1-color, 0, color);
   }
 
   return;
@@ -88,6 +85,23 @@ void ParticleFilter::loadMapImage()
   }
 }
 
+void ParticleFilter::writeVideo()
+{
+  Mat img;
+  frame.convertTo(img, CV_8UC3, 255);
+
+  if (!outputVideo.isOpened())
+  {
+      cout  << "Could not open the output video for write" << endl;
+      return;
+  }
+  
+  outputVideo << img;
+
+  cout << "Finished writing frame" << endl;
+  return;
+}
+
 void ParticleFilter::visualize()
 {
   frame = image.clone();
@@ -98,6 +112,8 @@ void ParticleFilter::visualize()
   if (!frame.empty()) {
     imshow("Wean Map", frame);                  // Show our image inside it
   }
+
+  writeVideo();
 
   waitKey(10);                                // Wait for a keystroke in the window
   return;

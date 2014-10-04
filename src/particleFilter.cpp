@@ -13,11 +13,12 @@ ParticleFilter::ParticleFilter()
   image = Mat(800,800,CV_32FC3);
   frame = Mat(800,800,CV_32FC3);
 
-  logName = "../data/log/robotdata1.log";
+  logName   = "../data/log/robotdata1.log";
+  videoName = "../data/videos/robotdata1.mpg";
+  outputVideo.open(videoName, CV_FOURCC('M', 'P', 'E', 'G'), 30, image.size(), true);
 
-  numParticles = 10000;
+  numParticles = 20000;
   numTestParticles = 0;
-
 
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);

@@ -139,7 +139,7 @@ float ParticleFilter::calculateWeightCV(Particle &p, int timestep) {
 
   ImageCoord startCell = ImageCoord(p.getLoc());
 
-  for (int a = 0; a < 180; a+=5) {
+  for (int a = 0; a < 180; a+=4) {
 
     ImageCoord endCell = ImageCoord();
     endCell.row = 800 - int(round(p.getX()+200*cos(p.getTheta()+(a-90)*M_PI/180)));

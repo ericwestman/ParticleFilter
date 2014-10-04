@@ -32,6 +32,7 @@ public:
   void dispAllParticles();
   void dispTestParticles();
   void loadMapImage();
+  void writeVideo();
   void visualize();
   void visualizeTestParticles();
 
@@ -53,8 +54,10 @@ private:
   std::vector<float> weightedDistribution;
   std::vector<int> intervals;
 
-  // Data pertaining to log file
+  // Data pertaining to log file and video file
   char *logName;
+  char *videoName;
+  cv::VideoWriter outputVideo;
   std::vector<LaserData> logLaserData;
   std::vector<OdometryData> logOdometryData;
 
