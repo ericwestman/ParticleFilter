@@ -15,13 +15,42 @@ void ParticleFilter::dispParticles()
   return;
 }
 
+
+int getMaxWeightParticle(vector<float>& weights)
+{
+
+	// get the index of the highest weighted particle
+	float weightMax = 0;
+    int maxIdx = 0;
+    for (int i = 0; i < weights.size(); i++) 
+    {
+    	if (weights[i] > weightMax)
+    	{
+    		weightMax = weights[i];
+    		maxIdx = i;
+    	}
+    }
+    return maxIdx;
+}
+
+
+
 void ParticleFilter::dispAllParticles()
 {
+
+  int maxIdx = getMaxWeightParticle(weights);
+
   for(int i = 0; i< numParticles; i++) {
     int particleX = particles[i].getX();
     int particleY = particles[i].getY();
 
-    circle(frame, Point(particleX, 800 - particleY), 4, Scalar_<float>(1.,0.,0.), -1);
+    float color = weights[i]/((double)weights[maxIdx]);
+
+    // circle(frame, Point(particleX, 800 - particleY), 4, Scalar_<float>(color,color,color), -1);
+    // ImageCoord c = ImageCoord(particles[i].getLoc());
+    // cout << particleY << " " << 800 - particleX << " " << color << " " << endl;
+    frame.at<Point3f>(800 - particleY, particleX) = Point3f(1-color,0,color);
+
   }
 
   return;
