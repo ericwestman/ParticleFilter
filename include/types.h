@@ -26,7 +26,28 @@ struct OdometryData{
 };
 
 
-struct Coord{
+class MapCoord {
+public:
+  MapCoord() {};
+
+  MapCoord(float x_in, float y_in) :
+    x(x_in), 
+    y(y_in) {};
+
+  MapCoord(int r_in, int c_in) :
+    x(c_in), 
+    y(800 - r_in) {};
+
+  float x, y;
+};
+
+class ImageCoord {
+public:
+  ImageCoord() {};
+
+  ImageCoord(MapCoord m) :
+    row(800 - m.y),
+    col(m.x) {};
   int row, col;
 };
 
@@ -34,24 +55,25 @@ struct Coord{
 class Particle {
 public:
   Particle(float x_val, float y_val, float theta_val) :
-    x(x_val),
-    y(y_val),
+    loc(x_val, y_val),
     theta(theta_val) {};
 
-  float getX() {return this->x;}
+  MapCoord getLoc() {return this->loc;}
 
-  float getY() {return this->y;}
+  float getX() {return this->loc.x;}
+
+  float getY() {return this->loc.y;}
 
   float getTheta() {return this->theta;}
 
-  void setX(int x_in) {this->x = x_in; return;}
+  void setX(int x_in) {this->loc.x = x_in; return;}
 
-  void setY(int y_in) {this->y = y_in; return;}
+  void setY(int y_in) {this->loc.y = y_in; return;}
 
   void setTheta(double theta_in) {this->theta = theta_in; return;}
 
 private:
-  float x, y;
+  MapCoord loc;
   float theta;
 };
 

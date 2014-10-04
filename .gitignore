@@ -32,4 +32,7 @@ build/
 debug/
 lib/
 release/
+videos/
+data/.DS_Store
+.DS_Store
 __MACOSX/

@@ -9,42 +9,15 @@ void ParticleFilter::dispParticles()
     int particleX = particles[i].getX();
     int particleY = particles[i].getY();
 
-    circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
+    circle(frame, Point(particleY, 800 - particleX), 4, Scalar_<float>(0.,0.,1.), -1);
   }
 
   return;
 }
 
 
-Scalar_<float> getColor(int i)
-{
-// fills in a gradient from the color <sr,sg,sb> to <er,eg,eb>
 
-	int steps = 100;
-	float n;
-	unsigned char r, g, b;
-
-	float sr = 0;
-	float sg = 0;
-	float sb = 1;
-
-	float er = 1;
-	float eg = 0;
-	float eb = 0;
-
-	for( i = 0; i < steps; i++ )
-	{
-		n = (float)i / (float) (steps-1);
-		r = sr * (1.0f-n) + er * n;
-		g = sg * (1.0f-n) + eg * n;
-		b = sb * (1.0f-n) + eb * n;
-
-	}
-	return Scalar_<float>(r,g,b);
-}
-
-
-int getMaxWeightParticle(vector<float> weights)
+int getMaxWeightParticle(vector<float>& weights)
 {
 
 	// get the index of the highest weighted particle
@@ -62,7 +35,6 @@ int getMaxWeightParticle(vector<float> weights)
 }
 
 
-
 void ParticleFilter::dispAllParticles()
 {
 
@@ -72,12 +44,14 @@ void ParticleFilter::dispAllParticles()
     int particleX = particles[i].getX();
     int particleY = particles[i].getY();
 
-    if (i != maxIdx)
-    	circle(frame, Point(particleY, particleX), 1, Scalar_<float>(1.,0.,0.), -1);
-    else
-    	circle(frame, Point(particleY, particleX), 4, Scalar_<float>(0.,0.,1.), -1);
+
+    float color = weights[i]/((double) weights[maxIdx]);
 
 
+    // circle(frame, Point(particleX, 800 - particleY), 4, Scalar_<float>(color,color,color), -1);
+    // ImageCoord c = ImageCoord(particles[i].getLoc());
+    // cout << particleY << " " << 800 - particleX << " " << color << " " << endl;
+    frame.at<Point3f>(800 - particleY, particleX) = Point3f(1-color, 0, color);
   }
 
   return;
@@ -90,9 +64,11 @@ void ParticleFilter::dispTestParticles()
     int particleY = particles[i].getY();
 
     if (i < numTestParticles/2)
-      circle(frame, Point(particleY, particleX), 1, Scalar_<float>(1.,0.,0.), -1);
+
+      circle(frame, Point(particleY, 800 - particleX), 4, Scalar_<float>(1.,0.,0.), -1);
     else
-      circle(frame, Point(particleY, particleX), 1, Scalar_<float>(0.,0.,1.), -1);
+      circle(frame, Point(particleY, 800 - particleX), 4, Scalar_<float>(0.,0.,1.), -1);
+
 
     if (particles[i].getX() < 280 && particles[i].getX() > 270 && particles[i].getY() < 430 && particles[i].getY() > 420)
       cout << "Good particle weight: " << weights[i] << endl;
@@ -108,11 +84,28 @@ void ParticleFilter::loadMapImage()
 {
   for(uint i = 0; i < image.rows; i++) {
     for(uint j = 0; j < image.cols; j++) {
-      float val = weanMap.prob[i][j];
+      float val = weanMap.prob[i][800-j];
       if (val >= 0) val = 1 - val;
-      image.at<Point3f>(i,j) = Point3f(val, val, val);
+      image.at<Point3f>(j,i) = Point3f(val, val, val);
     }
   }
+}
+
+void ParticleFilter::writeVideo()
+{
+  Mat img;
+  frame.convertTo(img, CV_8UC3, 255);
+
+  if (!outputVideo.isOpened())
+  {
+      cout  << "Could not open the output video for write" << endl;
+      return;
+  }
+  
+  outputVideo << img;
+
+  cout << "Finished writing frame" << endl;
+  return;
 }
 
 void ParticleFilter::visualize()
@@ -125,6 +118,8 @@ void ParticleFilter::visualize()
   if (!frame.empty()) {
     imshow("Wean Map", frame);                  // Show our image inside it
   }
+
+  writeVideo();
 
   waitKey(10);                                // Wait for a keystroke in the window
   return;
