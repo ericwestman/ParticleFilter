@@ -66,12 +66,12 @@ void ParticleFilter::motionModel(int timestep)
 float observationModel(float x, float mu)
 {
   // Gaussian component
-  float sigma_g = 15;
+  float sigma_g = 10;
   float g_max = 1.0;
   float gaussian = g_max*exp(-((mu - x) * (mu - x)) / ((sigma_g * sigma_g) * 2.0));
 
   // Max range component
-  float max_range_prob = g_max/3.0;
+  float max_range_prob = g_max/3; //Jane
   float max_range = (x > 818.0) ? max_range_prob : 0.0;
 
   // Uniform component
@@ -92,7 +92,7 @@ float ParticleFilter::calculateWeight(Particle &p, int timestep) {
   int laserRange = 500;
   ImageCoord startCell = ImageCoord(p.getLoc());
 
-  for (int a = 0; a < 180; a+=4) {
+  for (int a = 0; a < 180; a+=3) {
 
     ImageCoord endCell = ImageCoord();
     endCell.row = 800 - int(round(p.getX()+laserRange*cos(p.getTheta()+(a-90)*M_PI/180)));

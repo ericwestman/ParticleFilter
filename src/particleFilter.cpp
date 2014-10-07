@@ -20,7 +20,7 @@ ParticleFilter::ParticleFilter()
   outputVideo.open(videoName, CV_FOURCC('M', 'P', 'E', 'G'), 30, image.size(), true);
 
   // Particles
-  numParticles = 5000;
+  numParticles = 10000;
 
   // Distribution
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
