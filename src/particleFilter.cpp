@@ -16,7 +16,7 @@ ParticleFilter::ParticleFilter()
   // File names and video writer
   logName   = "../data/log/robotdata4.log";
   videoName = "../data/videos/robotdata4.mpg";
-  saveVideo = false;
+  saveVideo = true;
   outputVideo.open(videoName, CV_FOURCC('M', 'P', 'E', 'G'), 30, image.size(), true);
 
   // Particles
