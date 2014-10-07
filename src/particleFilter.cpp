@@ -21,12 +21,12 @@ ParticleFilter::ParticleFilter()
   outputVideo.open(videoName, CV_FOURCC('M', 'P', 'E', 'G'), 30, image.size(), true);
 
   // Particles
-  numParticles = 1000;
+  numParticles = 20000;
 
   // Distribution
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
-  xy_normal = std::normal_distribution<double>(0.0,1.0);
+  xy_normal = std::normal_distribution<double>(0.0,2.0);
   theta_normal = std::normal_distribution<double>(0.0,1.0*M_PI/180);
 }
 
@@ -53,11 +53,11 @@ int main()
     filter.resampleParticles();
 
     //filter.estimatePosition_maxWeight();
-    filter.estimatePosition_weightedAverage();
+    //filter.estimatePosition_weightedAverage();
     //filter.estimatePosition_average();
 
-    filter.visualizeWithRays(i);
-    //filter.visualize();
+    //filter.visualizeWithRays(i);
+    filter.visualize();
   }
 
   std::cout << "Done!\n";

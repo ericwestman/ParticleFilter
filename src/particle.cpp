@@ -24,15 +24,15 @@ void ParticleFilter::drawParticles()
   for(int i = 0; i < numParticles; ++i){
 
     // Get random particle from map
-    // int j = rand() % potentialParticles.size();
-    // Particle p = potentialParticles[j];
+    int j = rand() % potentialParticles.size();
+    Particle p = potentialParticles[j];
 
 
   	// video 3 and 1
 	//Particle p = Particle(395.0,400.0,-M_PI/2);
 
 	// video 4
-    Particle p = Particle(485.0,400.0,M_PI/2);
+    //Particle p = Particle(485.0,400.0,M_PI/2);
 
     // Assign random heading to particle
     p.setTheta(heading(mt));
@@ -97,11 +97,11 @@ float ParticleFilter::calculateWeight(Particle &p, int timestep) {
   float wallProb = 0.55;
   float particleWeight = 0.0;
 
-  int laserRange = 500;
+  int laserRange = 400;
 
   ImageCoord startCell = ImageCoord(p.getLoc());
 
-  for (int a = 0; a < 180; a+=3) {
+  for (int a = 0; a < 180; a+=4) {
 
     ImageCoord endCell = ImageCoord();
     endCell.row = 800 - int(round(p.getX()+laserRange*cos(p.getTheta()+(a-90)*M_PI/180)));
@@ -152,7 +152,7 @@ float ParticleFilter::calculateWeight(Particle &p, int timestep) {
         	laserDistToWall = laserRange*1.0;
         }
 
-        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.08);
+        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.2);
    
         particleWeight += log(p);
 

@@ -66,7 +66,7 @@ void ParticleFilter::dispAllParticles()
   }
 
   // draw estimated position of robot as average of x and y's
-  circle(frame, Point(estPosition.getX(),800 - estPosition.getY()) , 4, Scalar_<float>(0.,0.4,1.), -1);
+  //circle(frame, Point(estPosition.getX(),800 - estPosition.getY()) , 4, Scalar_<float>(0.,0.4,1.), -1);
 
   return;
 }
