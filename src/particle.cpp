@@ -24,8 +24,15 @@ void ParticleFilter::drawParticles()
   for(int i = 0; i < numParticles; ++i){
 
     // Get random particle from map
-    int j = rand() % potentialParticles.size();
-    Particle p = potentialParticles[j];
+    // int j = rand() % potentialParticles.size();
+    // Particle p = potentialParticles[j];
+
+
+  	// video 3 and 1
+	//Particle p = Particle(395.0,400.0,-M_PI/2);
+
+	// video 4
+    Particle p = Particle(485.0,400.0,M_PI/2);
 
     // Assign random heading to particle
     p.setTheta(heading(mt));
@@ -39,7 +46,7 @@ void ParticleFilter::motionModel(int timestep)
 	for (int i = 0; i < particles.size(); ++i) {
 		float xrand = xy_normal(generator);
 		float yrand = xy_normal(generator);
-    float trand = theta_normal(generator);
+    	float trand = theta_normal(generator);
 
     // We're only using the laser measurements (with odometry data), as opposed to all
     // of the odometry measurements that we get in between (maybe change later)
@@ -67,6 +74,7 @@ float observationModel(float x, float mu)
 {
   // Gaussian component
   float sigma_g = 10;
+
   float g_max = 1.0;
   float gaussian = g_max*exp(-((mu - x) * (mu - x)) / ((sigma_g * sigma_g) * 2.0));
 
@@ -90,6 +98,7 @@ float ParticleFilter::calculateWeight(Particle &p, int timestep) {
   float particleWeight = 0.0;
 
   int laserRange = 500;
+
   ImageCoord startCell = ImageCoord(p.getLoc());
 
   for (int a = 0; a < 180; a+=3) {
@@ -116,10 +125,20 @@ float ParticleFilter::calculateWeight(Particle &p, int timestep) {
       float val = image.at<cv::Point3f>(it.pos()).x;
 
       // If the ray sees something outside the map that we don't know about, give it a lower weight
+      // if (val < 0 && (logLaserData[timestep].r[a]/10.0 >= 818.0)) {
+      //   particleWeight += log(1.1);
+      //   break;
+      // }
+      // else if (val < 0 && (logLaserData[timestep].r[a]/10.0 < 818.0)) {
+      // 	particleWeight += log(0.001);
+      // 	break;
+      // }	
+
       if (val < 0) {
         particleWeight += log(0.1);
         break;
       }
+
       // If the ray hits a wall, then use the observation model
       else if (1 - val >= wallProb)
       {
@@ -133,7 +152,7 @@ float ParticleFilter::calculateWeight(Particle &p, int timestep) {
         	laserDistToWall = laserRange*1.0;
         }
 
-        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.2);
+        float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.08);
    
         particleWeight += log(p);
 
@@ -184,3 +203,112 @@ void ParticleFilter::resampleParticles()
   return;
 }
 
+float normalizeAngle(float &angInRad) 
+{
+  // puts degree in range -180 to 180
+  while (angInRad > M_PI) 
+  {
+    angInRad -= 2*M_PI;
+  }
+
+  while (angInRad < -M_PI) 
+  {
+    angInRad += 2*M_PI;
+  }
+  return angInRad;
+}
+
+
+
+
+void ParticleFilter::normalizeWeights()
+{
+	float weightTotal = 0;
+	for (int i = 0; i < weights.size(); i++) {
+		weightTotal += weights[i];
+	}
+
+	for (int i = 0; i < weights.size(); i++) {
+		weights[i] /= weightTotal;
+	}
+	return;
+}
+
+
+void ParticleFilter::estimatePosition_average()
+// estimate position by taking mean of particle positions
+{
+	float estX = 0;
+	float estY = 0;
+	float sumSin = 0;
+	float sumCos = 0;
+	float estTheta = 0;
+	for (int i = 0; i < particles.size(); i++) {
+		estX += particles[i].getX();
+		estY += particles[i].getY();
+
+		sumSin += sin(particles[i].getTheta());
+		sumCos += cos(particles[i].getTheta());
+	}
+
+	estX = estX/particles.size();
+	estY = estY/particles.size();
+	estTheta = atan2(sumSin/particles.size(),sumCos/particles.size());
+	normalizeAngle(estTheta);
+
+	estPosition.setX(estX);
+	estPosition.setY(estY);
+	estPosition.setTheta(estTheta);
+
+}
+
+void ParticleFilter::estimatePosition_maxWeight()
+// estimate position as the position of the highest weighted particle
+{
+
+	float maxWeight = 0;
+	int maxIdx = 0;
+	for (int i = 0; i < weights.size(); i++) {
+		if (weights[i] > maxWeight) {
+			maxWeight = weights[i];
+			maxIdx = i;
+		}
+	}
+
+	estPosition.setX(particles[maxIdx].getX());
+	estPosition.setY(particles[maxIdx].getY());
+	estPosition.setTheta(particles[maxIdx].getTheta());
+
+	return;
+
+}
+
+
+void ParticleFilter::estimatePosition_weightedAverage()
+// estimate position as weighted mean based on each particle's weight
+{
+	float estX = 0;
+	float estY = 0;
+	float sumSin = 0;
+	float sumCos = 0;
+	float estTheta = 0;
+
+	normalizeWeights();
+
+	for (int i = 0; i < particles.size(); i++) {
+		estX += particles[i].getX()*weights[i];
+		estY += particles[i].getY()*weights[i];
+
+		sumSin += sin(particles[i].getTheta());
+		sumCos += cos(particles[i].getTheta());
+	}
+
+	// can't just take mean of angles, need to do it this way	
+	estTheta = atan2(sumSin/particles.size(),sumCos/particles.size());
+	normalizeAngle(estTheta);
+
+	estPosition.setX(estX);
+	estPosition.setY(estY);
+	estPosition.setTheta(estTheta);
+
+}

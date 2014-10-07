@@ -13,6 +13,7 @@ ParticleFilter::ParticleFilter()
   image = Mat(800,800,CV_32FC3);
   frame = Mat(800,800,CV_32FC3);
 
+
   // File names and video writer
   logName   = "../data/log/robotdata4.log";
   videoName = "../data/videos/robotdata4.mpg";
@@ -20,12 +21,12 @@ ParticleFilter::ParticleFilter()
   outputVideo.open(videoName, CV_FOURCC('M', 'P', 'E', 'G'), 30, image.size(), true);
 
   // Particles
-  numParticles = 10000;
+  numParticles = 1000;
 
   // Distribution
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
-  xy_normal = std::normal_distribution<double>(0.0,0.5);
+  xy_normal = std::normal_distribution<double>(0.0,1.0);
   theta_normal = std::normal_distribution<double>(0.0,1.0*M_PI/180);
 }
 
@@ -50,7 +51,13 @@ int main()
     filter.motionModel(i);
     filter.updateWeights(i);
     filter.resampleParticles();
-    filter.visualize();
+
+    //filter.estimatePosition_maxWeight();
+    filter.estimatePosition_weightedAverage();
+    //filter.estimatePosition_average();
+
+    filter.visualizeWithRays(i);
+    //filter.visualize();
   }
 
   std::cout << "Done!\n";
