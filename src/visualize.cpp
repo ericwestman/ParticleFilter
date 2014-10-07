@@ -128,7 +128,7 @@ void ParticleFilter::writeVideo()
 void ParticleFilter::visualize()
 {
   frame = image.clone();
-  dispParticles();
+  dispAllParticles();
 
   namedWindow( "Wean Map", WINDOW_AUTOSIZE);  // Create a window for display.
   if (!frame.empty()) {
