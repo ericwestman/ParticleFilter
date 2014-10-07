@@ -20,21 +20,12 @@ public:
   float calculateWeight(Particle &p, int timestep);
   void updateWeights(int timestep);
   void resampleParticles();
-  void estimatePosition_average();
-  void estimatePosition_weightedAverage();
-  void estimatePosition_maxWeight();
-  void normalizeWeights();
 
   // Visualize methods
   void dispParticles();
-  void dispAllParticles();
-  void dispTestParticles();
-  void dispLasers(int &timestep);
   void loadMapImage();
   void writeVideo();
   void visualize();
-  void visualizeWithRays(int timestep);
-  void visualizeTestParticles();
 
 
   std::vector<float> timestamps;

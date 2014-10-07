@@ -17,11 +17,11 @@ ParticleFilter::ParticleFilter()
   // File names and video writer
   logName   = "../data/log/robotdata4.log";
   videoName = "../data/videos/robotdata4.mpg";
-  saveVideo = true;
+  saveVideo = false;
   outputVideo.open(videoName, CV_FOURCC('M', 'P', 'E', 'G'), 30, image.size(), true);
 
   // Particles
-  numParticles = 20000;
+  numParticles = 10000;
 
   // Distribution
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -51,12 +51,6 @@ int main()
     filter.motionModel(i);
     filter.updateWeights(i);
     filter.resampleParticles();
-
-    //filter.estimatePosition_maxWeight();
-    //filter.estimatePosition_weightedAverage();
-    //filter.estimatePosition_average();
-
-    //filter.visualizeWithRays(i);
     filter.visualize();
   }
 
