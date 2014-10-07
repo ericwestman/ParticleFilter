@@ -27,6 +27,7 @@ void ParticleFilter::drawParticles()
     // int j = rand() % potentialParticles.size();
     // Particle p = potentialParticles[j];
 
+
   	// video 3 and 1
 	//Particle p = Particle(395.0,400.0,-M_PI/2);
 
@@ -37,47 +38,6 @@ void ParticleFilter::drawParticles()
     p.setTheta(heading(mt));
     particles.push_back(p);
   }
-  return;
-}
-
-void ParticleFilter::drawTestParticles()
-{
-  // Set up random number generator for heading
-  std::random_device rd;
-  std::mt19937_64 mt(rd());
-  std::uniform_real_distribution<float> heading(-M_PI, M_PI);
-
-  Particle p = Particle(0.,0.,0.);
-
-  for(int i = 0; i < numTestParticles; ++i){
-
-    // Test stuff
-    // if (i == 0) {
-    //   // Get random particle around the neighborhood of the real robot
-    //   p = Particle(400.0, 410.0, -M_PI/2);//-M_PI/2);
-    //   // p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
-    // }
-    // else if (i == 1){
-    //   // int j = rand() % potentialParticles.size();
-    //   // p = potentialParticles[j];
-    //   // p.setTheta(heading(mt));
-
-    //   p = Particle(650.0, 465.0, -M_PI/2);//M_PI/2);
-
-    // }
-    // else {
-    //   int j = rand() % potentialParticles.size();
-    //   p = potentialParticles[j];
-    //   p.setTheta(heading(mt));
-    // }
-
-    p = Particle(400.0+ rand() % 5, 410.0+ rand() % 5, -M_PI/2 + rand() % 1); //-M_PI/2);
-    //   // p = Particle(275.0 + rand() % 5, 425.0 + rand() % 5, heading(mt));
-
-    // cout << "X " << p.getX() << " Y " << p.getY() << " T " << p.getTheta() << endl;
-    particles.push_back(p);
-  }
-
   return;
 }
 
@@ -113,12 +73,13 @@ void ParticleFilter::motionModel(int timestep)
 float observationModel(float x, float mu)
 {
   // Gaussian component
-  float sigma_g = 8;
+  float sigma_g = 10;
+
   float g_max = 1.0;
   float gaussian = g_max*exp(-((mu - x) * (mu - x)) / ((sigma_g * sigma_g) * 2.0));
 
   // Max range component
-  float max_range_prob = g_max/3.0;
+  float max_range_prob = g_max/3; //Jane
   float max_range = (x > 818.0) ? max_range_prob : 0.0;
 
   // Uniform component
@@ -129,22 +90,18 @@ float observationModel(float x, float mu)
   float a = g_max*1.0/3.0;
   float exponential = a*exp(sigma_e*x);
 
-  // return max( max ( max(gaussian, uniform), max_range), exponential);
   return gaussian + exponential + uniform + max_range;
-  // return gaussian + uniform + max_range;
 }
 
-float ParticleFilter::calculateWeightCV(Particle &p, int timestep) {
-  float wallProb = 0.7;
+float ParticleFilter::calculateWeight(Particle &p, int timestep) {
+  float wallProb = 0.55;
   float particleWeight = 0.0;
 
-  // For drawing the individual rays / particles
-  // frame = image.clone();
- 	
-  int laserRange = 800;
+  int laserRange = 500;
+
   ImageCoord startCell = ImageCoord(p.getLoc());
 
-  for (int a = 0; a < 180; a+=4) {
+  for (int a = 0; a < 180; a+=3) {
 
     ImageCoord endCell = ImageCoord();
     endCell.row = 800 - int(round(p.getX()+laserRange*cos(p.getTheta()+(a-90)*M_PI/180)));
@@ -154,15 +111,6 @@ float ParticleFilter::calculateWeightCV(Particle &p, int timestep) {
     // from 8-bit 3-channel image to the buffer
     cv::LineIterator it(image, cv::Point(startCell.col, startCell.row), 
                                cv::Point(endCell.col, endCell.row), 8);
-
-
-    // // Display the ray of the laser in the corner
-    // int start = 150;
-    // int laserDist = logLaserData[timestep].r[a]/10.0;
-    // cv::Point laserStart = cv::Point(start, start);
-    // cv::Point laserEnd = cv::Point(start+laserDist*cos(a*M_PI/180), start+laserDist*sin(a*M_PI/180));
-    // if (a < 110 && a > 70) line(frame, laserStart, laserEnd, cv::Scalar_<float>(1., 0., 0.));
-    // else line(frame, laserStart, laserEnd, cv::Scalar_<float>(0., 1., 0.));
 
 
     // alternative way of iterating through the line
@@ -207,63 +155,29 @@ float ParticleFilter::calculateWeightCV(Particle &p, int timestep) {
         float p = pow(observationModel(laserDistToWall, particleDistToWall), 0.08);
    
         particleWeight += log(p);
-        //particleWeight += log(p/(1-p));
-
-        // Display the ray from the particle
-        // if (a < 110 && a > 70) line(frame, cv::Point(startCell.col, startCell.row), it.pos(), cv::Scalar_<float>(1., 0., 0.));
-        // else line(frame, cv::Point(startCell.col, startCell.row), it.pos(), cv::Scalar_<float>(0., 1., 0.));
 
         break;
       }
     }
 
-    // Optionally display every ray and the end point that it compares with the laser data
-    // cv::circle(frame, it.pos(), 4, cv::Scalar_<float>(0.,0.,1.), -1);
-    // cv::namedWindow( "Wean Map", cv::WINDOW_AUTOSIZE);
-    // if (!frame.empty()) {
-    //   cv::imshow("Wean Map", frame);
-    // }
-    // cout << "Weight: " << particleWeight << " StartRow: " << startCell.row << " StartCol: " << startCell.col << " ItPosY: " << it.pos().y << " ItPosX: " << it.pos().x << endl;
-    // cv::waitKey(10);
-
   }
 
-  // cout << exp(particleWeight) << endl;
-  
   return exp(particleWeight);
-  //return 1.0 - 1.0/(1.0 + exp(particleWeight));
 }
 
-void ParticleFilter::updateWeights_test()
-{
-  weights.clear();
-  intervals.clear();
 
-  weights.push_back(1000.);
-  intervals.push_back(0);
-
-  for (int i = 1; i < particles.size(); ++i) {
-    weights.push_back(0.1);
-    intervals.push_back(i);
-  }
-  intervals.push_back(particles.size());
-
-  return;
-}
-
-void ParticleFilter::updateWeightsCV(int timestep)
+void ParticleFilter::updateWeights(int timestep)
 {
   weights.clear();
   intervals.clear();
 
   for (int p = 0; p <= particles.size(); p++) {
-    weights.push_back(calculateWeightCV(particles[p],timestep));
+    weights.push_back(calculateWeight(particles[p],timestep));
     intervals.push_back(p);
   }
 
   return;
 }
-
 
 
 void ParticleFilter::resampleParticles()
@@ -281,6 +195,7 @@ void ParticleFilter::resampleParticles()
   {
       // Generate random number using gen, distributed according to dist
       int r = (int) dist(generator);
+
       // Push the new particle into the vector
       particles.push_back(oldParticles[r]);
   }

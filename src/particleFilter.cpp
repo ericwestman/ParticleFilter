@@ -13,14 +13,17 @@ ParticleFilter::ParticleFilter()
   image = Mat(800,800,CV_32FC3);
   frame = Mat(800,800,CV_32FC3);
 
+
+  // File names and video writer
   logName   = "../data/log/robotdata4.log";
-  videoName = "../data/videos/robotdata4_wtdAvg.mpg";
-  outputVideo.open(videoName, CV_FOURCC('M', 'P', 'E', 'G'), 22, image.size(), true);
+  videoName = "../data/videos/robotdata4.mpg";
+  saveVideo = false;
+  outputVideo.open(videoName, CV_FOURCC('M', 'P', 'E', 'G'), 30, image.size(), true);
 
+  // Particles
   numParticles = 1000;
-  numTestParticles = 0;
 
-
+  // Distribution
   unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::default_random_engine generator(seed);
   xy_normal = std::normal_distribution<double>(0.0,1.0);
@@ -42,13 +45,11 @@ int main()
 
   // Draw initial particles
   filter.drawParticles();
-  // filter.visualize();
 
   // Start the filter!
   for (int i = 1; i < filter.timestamps.size(); i++) {
     filter.motionModel(i);
-    // filter.updateWeights_test();
-    filter.updateWeightsCV(i);
+    filter.updateWeights(i);
     filter.resampleParticles();
 
     //filter.estimatePosition_maxWeight();
@@ -62,36 +63,4 @@ int main()
   std::cout << "Done!\n";
 }
 
-
-// Test Particles
-// int main()
-// {
-//   // Setup for random number generator
-//   srand(time(NULL));
-
-//   // Initialize our particle filter
-//   ParticleFilter filter;
-
-//   // Load occupancy map of wean hall and data from log
-//   filter.readMap();
-//   filter.loadMapImage();
-//   filter.readLog();
-
-//   // Draw initial particles
-//   cout << "Drawing test particles " << endl;
-//   filter.drawTestParticles();
-//   int j = 0;
-//   filter.updateWeightsCV(j);
-//   filter.visualizeTestParticles();
-
-//   // Start the filter!
-//   for (int i = 1; i < filter.timestamps.size(); i++) {
-//     filter.motionModel(i);
-//     filter.visualizeTestParticles();
-//     filter.updateWeightsCV(i);
-//     filter.resampleParticles();
-//   }
-
-//   std::cout << "Done!\n";
-// }
 

@@ -3,36 +3,22 @@
 using namespace cv;
 using namespace std;
 
-void ParticleFilter::dispParticles()
-{
-  for(int i = 0; i< min(500, numParticles); i++) {
-    int particleX = particles[i].getX();
-    int particleY = particles[i].getY();
-
-    circle(frame, Point(particleY, 800 - particleX), 4, Scalar_<float>(0.,0.,1.), -1);
-  }
-
-  return;
-}
-
-
-
 int getMaxWeightParticle(vector<float>& weights)
 {
-
-	// get the index of the highest weighted particle
-	float weightMax = 0;
+  // get the index of the highest weighted particle
+  float weightMax = 0;
     int maxIdx = 0;
     for (int i = 0; i < weights.size(); i++) 
     {
-    	if (weights[i] > weightMax)
-    	{
-    		weightMax = weights[i];
-    		maxIdx = i;
-    	}
+      if (weights[i] > weightMax)
+      {
+        weightMax = weights[i];
+        maxIdx = i;
+      }
     }
     return maxIdx;
 }
+
 
 
 
@@ -67,7 +53,6 @@ void ParticleFilter::dispLasers(int &timestep)
 
 void ParticleFilter::dispAllParticles()
 {
-
   int maxIdx = getMaxWeightParticle(weights);
 
   for(int i = 0; i< numParticles; i++) {
@@ -77,10 +62,6 @@ void ParticleFilter::dispAllParticles()
 
     float color = weights[i]/((double) weights[maxIdx]);
 
-
-    // circle(frame, Point(particleX, 800 - particleY), 4, Scalar_<float>(color,color,color), -1);
-    // ImageCoord c = ImageCoord(particles[i].getLoc());
-    // cout << particleY << " " << 800 - particleX << " " << color << " " << endl;
     frame.at<Point3f>(800 - particleY, particleX) = Point3f(1-color, 0, color);
   }
 
@@ -115,6 +96,7 @@ void ParticleFilter::dispTestParticles()
   return;
 }
 
+
 void ParticleFilter::loadMapImage()
 {
   for(uint i = 0; i < image.rows; i++) {
@@ -146,19 +128,19 @@ void ParticleFilter::writeVideo()
 void ParticleFilter::visualize()
 {
   frame = image.clone();
-  // dispParticles();
-  dispAllParticles();
+  dispParticles();
 
   namedWindow( "Wean Map", WINDOW_AUTOSIZE);  // Create a window for display.
   if (!frame.empty()) {
     imshow("Wean Map", frame);                  // Show our image inside it
   }
 
-  writeVideo();
+  if (saveVideo) writeVideo();
 
   waitKey(10);                                // Wait for a keystroke in the window
   return;
 }
+
 
 
 void ParticleFilter::visualizeWithRays(int timestep)

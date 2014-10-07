@@ -16,15 +16,9 @@ public:
 
   // Particle filter methods
   void drawParticles();
-  void drawTestParticles();
   void motionModel(int timestep);
-  float calculateWeight_LUT(Particle &p, int timestep);
   float calculateWeight(Particle &p, int timestep);
-  float calculateWeightCV(Particle &p, int timestep);
-  void updateWeights_test();
-  void updateWeights_LUT(int timestep);
   void updateWeights(int timestep);
-  void updateWeightsCV(int timestep);
   void resampleParticles();
   void estimatePosition_average();
   void estimatePosition_weightedAverage();
@@ -41,6 +35,7 @@ public:
   void visualize();
   void visualizeWithRays(int timestep);
   void visualizeTestParticles();
+
 
   std::vector<float> timestamps;
 
@@ -65,6 +60,7 @@ private:
   char *logName;
   char *videoName;
   cv::VideoWriter outputVideo;
+  bool saveVideo;
   std::vector<LaserData> logLaserData;
   std::vector<OdometryData> logOdometryData;
 
