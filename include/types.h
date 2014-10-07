@@ -66,11 +66,11 @@ public:
 
   float getTheta() {return this->theta;}
 
-  void setX(int x_in) {this->loc.x = x_in; return;}
+  void setX(float x_in) {this->loc.x = x_in; return;}
 
-  void setY(int y_in) {this->loc.y = y_in; return;}
+  void setY(float y_in) {this->loc.y = y_in; return;}
 
-  void setTheta(double theta_in) {this->theta = theta_in; return;}
+  void setTheta(float theta_in) {this->theta = theta_in; return;}
 
 private:
   MapCoord loc;

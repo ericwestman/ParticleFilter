@@ -35,6 +35,36 @@ int getMaxWeightParticle(vector<float>& weights)
 }
 
 
+
+void drawLaser( Mat img, Point start, Point end )
+{
+  int thickness = 1;
+  int lineType = 8;
+  line( img,
+        start,
+        end,
+        Scalar( 0, 1, 0 ),
+        thickness,
+        lineType );
+}
+
+
+void ParticleFilter::dispLasers(int &timestep)
+{
+  for (int a = 0; a < 180; a++)
+  {
+    float laserDist = (logLaserData[timestep].r[a]/10.0);
+
+    float laser_x = laserDist*cos((179-a)*M_PI/180.0 + estPosition.getTheta()) + estPosition.getX();
+    float laser_y = laserDist*sin((179-a)*M_PI/180.0 + estPosition.getTheta()) + 800 - estPosition.getY();
+    drawLaser(frame,Point(estPosition.getX(),800 - estPosition.getY()), Point(laser_x,laser_y));
+  }
+}
+
+
+
+
+
 void ParticleFilter::dispAllParticles()
 {
 
@@ -54,8 +84,13 @@ void ParticleFilter::dispAllParticles()
     frame.at<Point3f>(800 - particleY, particleX) = Point3f(1-color, 0, color);
   }
 
+  // draw estimated position of robot as average of x and y's
+  circle(frame, Point(estPosition.getX(),800 - estPosition.getY()) , 4, Scalar_<float>(0.,0.4,1.), -1);
+
   return;
 }
+
+
 
 void ParticleFilter::dispTestParticles()
 {
@@ -113,6 +148,25 @@ void ParticleFilter::visualize()
   frame = image.clone();
   // dispParticles();
   dispAllParticles();
+
+  namedWindow( "Wean Map", WINDOW_AUTOSIZE);  // Create a window for display.
+  if (!frame.empty()) {
+    imshow("Wean Map", frame);                  // Show our image inside it
+  }
+
+  writeVideo();
+
+  waitKey(10);                                // Wait for a keystroke in the window
+  return;
+}
+
+
+void ParticleFilter::visualizeWithRays(int timestep)
+{
+  frame = image.clone();
+  // dispParticles();
+  dispAllParticles();
+  dispLasers(timestep);
 
   namedWindow( "Wean Map", WINDOW_AUTOSIZE);  // Create a window for display.
   if (!frame.empty()) {

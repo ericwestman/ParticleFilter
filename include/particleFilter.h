@@ -26,14 +26,20 @@ public:
   void updateWeights(int timestep);
   void updateWeightsCV(int timestep);
   void resampleParticles();
+  void estimatePosition_average();
+  void estimatePosition_weightedAverage();
+  void estimatePosition_maxWeight();
+  void normalizeWeights();
 
   // Visualize methods
   void dispParticles();
   void dispAllParticles();
   void dispTestParticles();
+  void dispLasers(int &timestep);
   void loadMapImage();
   void writeVideo();
   void visualize();
+  void visualizeWithRays(int timestep);
   void visualizeTestParticles();
 
   std::vector<float> timestamps;
@@ -53,6 +59,7 @@ private:
   std::vector<float> weights;
   std::vector<float> weightedDistribution;
   std::vector<int> intervals;
+  Particle estPosition = Particle(395.0,400.0,M_PI/2);
 
   // Data pertaining to log file and video file
   char *logName;
